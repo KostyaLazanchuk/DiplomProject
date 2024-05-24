@@ -1,14 +1,14 @@
 ﻿using BusinessLogic.Interface;
-using DataAccess.Models;
 using DataAccess.Repositories;
+using Diplom.Core.Models;
 
 namespace BusinessLogic.Service
 {
-    public class CoommonService : ICommonService
+    public class CommonService : ICommonService
     {
         private readonly CommonRepository _commonRepository;
 
-        public CoommonService(CommonRepository commonRepository)
+        public CommonService(CommonRepository commonRepository)
         {
             _commonRepository = commonRepository;
         }

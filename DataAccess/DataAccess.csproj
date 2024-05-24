@@ -11,4 +11,8 @@
     <PackageReference Include="Neo4j.Driver" Version="5.20.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Diplom.Core\Diplom.Core.csproj" />
+  </ItemGroup>
+
 </Project>

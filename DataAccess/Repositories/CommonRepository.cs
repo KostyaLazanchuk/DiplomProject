@@ -1,4 +1,4 @@
-﻿using DataAccess.Models;
+﻿using Diplom.Core.Models;
 using Neo4j.Driver;
 
 namespace DataAccess.Repositories
@@ -36,7 +36,7 @@ namespace DataAccess.Repositories
                 var result = await session.ExecuteReadAsync(async tx =>
                 {
                     var reader = await tx.RunAsync(
-                        "MATCH (n:Node)-[r]->(m) RETURN n, collect({ id: m.id, weight: r.weight, end: m.id }) as relationships");
+                        "MATCH (n:Node) OPTIONAL MATCH (n)-[r]->(m) RETURN n, collect({ id: m.id, weight: r.weight, end: m.id }) as relationships");
 
                     var nodes = new List<Node>();
 
@@ -49,18 +49,24 @@ namespace DataAccess.Repositories
                         {
                             Id = Guid.Parse(nodeProperties["id"].As<string>()),
                             Name = nodeProperties["name"].As<string>(),
-                            Relationship = new List<Relationship>()
+                            Edge = new List<Edge>()
                         };
 
-                        foreach (var relationshipData in relationships)
+                        if (relationships != null)
                         {
-                            var relationship = new Relationship
+                            foreach (var relationshipData in relationships)
                             {
-                                Id = Guid.Parse(relationshipData["id"].ToString()),
-                                Weight = Convert.ToInt32(relationshipData["weight"]),
-                                EndNode = Guid.Parse(relationshipData["end"].ToString())
-                            };
-                            nodeObject.Relationship.Add(relationship);
+                                if (relationshipData["id"] != null && relationshipData["weight"] != null && relationshipData["end"] != null)
+                                {
+                                    var relationship = new Edge
+                                    {
+                                        Id = Guid.Parse(relationshipData["id"].ToString()),
+                                        Weight = Convert.ToInt32(relationshipData["weight"]),
+                                        EndNode = Guid.Parse(relationshipData["end"].ToString())
+                                    };
+                                    nodeObject.Edge.Add(relationship);
+                                }
+                            }
                         }
 
                         nodes.Add(nodeObject);

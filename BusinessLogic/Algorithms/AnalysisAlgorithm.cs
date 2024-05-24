@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccess.Repositories
+namespace BusinessLogic.Algorithms
 {
-    public class DijkstraAlgorithmRepository
+    public class AnalysisAlgorithm
     {
-        //Bled
     }
 }

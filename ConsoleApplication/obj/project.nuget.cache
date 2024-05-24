@@ -1,9 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "rTBAArf+aiDiqklb+7nQSq4Edr3sNvkF1d5oVIJTJXzQHZowNOa3f0uS32He/7QohNfebbjeS1yjgg74qGJRgg==",
+  "dgSpecHash": "bWgQrTEylpfayiSG2XXU1qoHgnld8/L2hf1INzXdsPeUXSgBgPWYBKMoAcOhPDkHLrbh0K35VAPzXqmwyOrUkA==",
   "success": true,
   "projectFilePath": "E:\\EdenLab\\DiplomProjectF\\ConsoleApplication\\DiplomProject\\ConsoleApplication\\ConsoleApplication.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\klaza\\.nuget\\packages\\fluentvalidation\\11.9.1\\fluentvalidation.11.9.1.nupkg.sha512",
+    "C:\\Users\\klaza\\.nuget\\packages\\mediatr\\12.2.0\\mediatr.12.2.0.nupkg.sha512",
+    "C:\\Users\\klaza\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
     "C:\\Users\\klaza\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\5.0.0\\microsoft.bcl.asyncinterfaces.5.0.0.nupkg.sha512",
     "C:\\Users\\klaza\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\klaza\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.4\\microsoft.entityframeworkcore.8.0.4.nupkg.sha512",

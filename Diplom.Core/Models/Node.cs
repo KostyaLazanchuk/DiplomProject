@@ -1,4 +1,10 @@
-﻿namespace DataAccess.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Diplom.Core.Models
 {
     public class Node
     {
@@ -6,6 +12,6 @@
         public required string Name { get; set; }
         public DateTime CreatedOn { get; set; }
         public int Position { get; set; }
-        public List<Relationship>? Relationship { get; set; }
+        public List<Edge>? Edge { get; set; }
     }
 }

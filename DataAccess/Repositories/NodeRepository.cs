@@ -1,4 +1,5 @@
-﻿using DataAccess.Models;
+﻿using Diplom.Core.Models;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Neo4j.Driver;
 
 namespace DataAccess.Repositories
@@ -20,7 +21,7 @@ namespace DataAccess.Repositories
                 var result = await session.ExecuteReadAsync(async tx =>
                 {
                     var reader = await tx.RunAsync(
-                        "MATCH (n:Node)-[r]->(m) WHERE n.id = $id RETURN n, collect({ id: m.id, weight: r.weight, end: m.id }) as relationships",
+                        "MATCH (n:Node) WHERE n.id = $id OPTIONAL MATCH (n)-[r]->(m) RETURN n, collect({ id: m.id, weight: r.weight, end: m.id }) as relationships",
                         new { id = id.ToString() });
                     var record = await reader.SingleAsync();
 
@@ -31,23 +32,33 @@ namespace DataAccess.Repositories
                     {
                         Id = Guid.Parse(nodeProperties["id"].As<string>()),
                         Name = nodeProperties["name"].As<string>(),
-                        Relationship = new List<Relationship>()
+                        Position = Convert.ToInt32(nodeProperties["position"]),
+                        CreatedOn = DateTime.Parse(nodeProperties["createdOn"].As<string>()),
+                        Edge = new List<Edge>()
                     };
 
                     foreach (var relationshipData in relationships)
                     {
-                        var relationship = new Relationship
+                        if (relationshipData["id"] != null) // Check if relationship data is not null
                         {
-                            Id = Guid.Parse(relationshipData["id"].ToString()),
-                            Weight = Convert.ToInt32(relationshipData["weight"]),
-                            EndNode = Guid.Parse(relationshipData["end"].ToString())
-                        };
-                        nodeObject.Relationship.Add(relationship);
+                            var relationship = new Edge
+                            {
+                                Id = Guid.Parse(relationshipData["id"].ToString()),
+                                Weight = Convert.ToInt32(relationshipData["weight"]),
+                                EndNode = Guid.Parse(relationshipData["end"].ToString())
+                            };
+                            nodeObject.Edge.Add(relationship);
+                        }
                     }
 
                     return nodeObject;
                 });
                 return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error occurred: {ex.Message}");
+                throw; // Re-throw the exception to be handled by the caller if needed
             }
             finally
             {
@@ -63,20 +74,36 @@ namespace DataAccess.Repositories
                 var result = await session.ExecuteReadAsync(async tx =>
                 {
                     var reader = await tx.RunAsync(
-                        "MATCH (n:Node { name: $name }) RETURN n",
+                        "MATCH (n:Node { name: $name }) OPTIONAL MATCH (n)-[r]->(m) RETURN n, collect({ id: r.id, weight: r.weight, endNode: m.id }) as edges",
                         new { name });
 
                     var record = await reader.SingleAsync();
 
                     var nodeProperties = record["n"].As<INode>().Properties;
+                    var edgesData = record["edges"].As<List<Dictionary<string, object>>>();
 
                     var nodeObject = new Node
                     {
-                        Id = Guid.Parse(nodeProperties["id"].As<string>()),
-                        Name = nodeProperties["name"].As<string>(),
-                        Relationship = new List<Relationship>()
+                        Id = nodeProperties.ContainsKey("id") ? Guid.Parse(nodeProperties["id"].As<string>()) : Guid.Empty,
+                        Name = nodeProperties.ContainsKey("name") ? nodeProperties["name"].As<string>() : string.Empty,
+                        Position = nodeProperties.ContainsKey("position") ? int.Parse(nodeProperties["position"].As<string>()) : 0,
+                        CreatedOn = nodeProperties.ContainsKey("createdOn") ? DateTime.Parse(nodeProperties["createdOn"].As<string>()) : DateTime.MinValue,
+                        Edge = new List<Edge>()
                     };
 
+                    if(edgesData is null)
+                    {
+                        foreach (var edgeData in edgesData)
+                        {
+                            var edge = new Edge
+                            {
+                                Id = edgeData.ContainsKey("id") ? Guid.Parse(edgeData["id"].ToString()) : Guid.Empty,
+                                Weight = edgeData.ContainsKey("weight") ? Convert.ToInt32(edgeData["weight"]) : 0,
+                                EndNode = edgeData.ContainsKey("endNode") ? Guid.Parse(edgeData["endNode"].ToString()) : (Guid?)null
+                            };
+                            nodeObject.Edge.Add(edge);
+                        }
+                    }
                     return nodeObject;
                 });
 
@@ -86,6 +113,7 @@ namespace DataAccess.Repositories
             {
                 await session.CloseAsync();
             }
+
         }
 
 
@@ -109,7 +137,7 @@ namespace DataAccess.Repositories
                         Name = createdNode.Properties["name"].As<string>(),
                         Position = createdNode.Properties["position"].As<int>(),
                         CreatedOn = DateTime.Now,
-                        Relationship = new List<Relationship>()
+                        Edge = new List<Edge>()
                     };
                 });
                 return result;
@@ -136,7 +164,9 @@ namespace DataAccess.Repositories
                     {
                         Id = Guid.Parse(updatedNode.Properties["id"].As<string>()),
                         Name = updatedNode.Properties["name"].As<string>(),
-                        Relationship = new List<Relationship>()
+                        Position = int.Parse(updatedNode.Properties["position"].As<string>()),
+                        CreatedOn = DateTime.Parse(updatedNode.Properties["createdOn"].As<string>()),
+                        Edge = new List<Edge>()
                     };
                 });
                 return result;
@@ -152,18 +182,123 @@ namespace DataAccess.Repositories
             var session = _driver.AsyncSession();
             try
             {
-                await session.ExecuteWriteAsync(async tx =>
+                var result = await session.ExecuteWriteAsync(async tx =>
                 {
-                    await tx.RunAsync(
-                        "MATCH (n:Node {id: $id}) DELETE n",
+                    var reader = await tx.RunAsync(
+                        "MATCH (n:Node {id: $id}) DETACH DELETE n RETURN COUNT(n) as deletedCount",
                         new { id = id.ToString() });
+
+                    var record = await reader.SingleAsync();
+                    var deletedCount = record["deletedCount"].As<int>();
+
+                    return deletedCount > 0;
                 });
-                return true;
+
+                return result;
             }
             finally
             {
                 await session.CloseAsync();
             }
         }
+
+        public async Task<List<Node>> GetNeighbors(Guid id)
+        {
+            var nodes = new List<Node>();
+
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var cursor = await tx.RunAsync(
+                        "MATCH (n:Node { id: $id })-[r]->(m:Node) RETURN m",
+                        new { id = id.ToString() });
+
+                    return await cursor.ToListAsync();
+                });
+
+                foreach (var record in result)
+                {
+                    var mNode = record["m"].As<INode>();
+                    var node = new Node
+                    {
+                        Id = Guid.Parse(mNode.Properties["id"].As<string>()),
+                        Name = mNode.Properties["name"].As<string>(),
+                        CreatedOn = DateTime.Parse(mNode.Properties["createdOn"].As<string>()),
+                        Position = int.Parse(mNode.Properties["position"].As<string>()),
+                        Edge = new List<Edge>()
+                    };
+                    nodes.Add(node);
+                }
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+
+            return nodes;
+        }
+
+        public async Task<int> GetDistance(Guid currentNodeId, Guid neighborNodeId)
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var cursor = await tx.RunAsync(
+                        "MATCH (current:Node { id: $currentNodeId })-[r]->(neighbor:Node { id: $neighborNodeId }) RETURN r.weight AS weight",
+                        new { currentNodeId = currentNodeId.ToString(), neighborNodeId = neighborNodeId.ToString() });
+
+                    if (await cursor.FetchAsync())
+                    {
+                        return cursor.Current["weight"].As<int>();
+                    }
+                    return int.MaxValue;
+                });
+
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
+
+        public async Task<List<Node>> GetAllNodes()
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var reader = await tx.RunAsync("MATCH (n:Node) RETURN n");
+
+                    var nodes = new List<Node>();
+
+                    while (await reader.FetchAsync())
+                    {
+                        var nodeProperties = reader.Current["n"].As<INode>().Properties;
+
+                        nodes.Add(new Node
+                        {
+                            Id = Guid.Parse(nodeProperties["id"].As<string>()),
+                            Name = nodeProperties["name"].As<string>(),
+                            Edge = new List<Edge>()
+                        });
+                    }
+
+                    return nodes;
+                });
+
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
+
     }
 }

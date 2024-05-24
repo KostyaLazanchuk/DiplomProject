@@ -69,3 +69,8 @@ E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\ConsoleApplication\ob
 E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\ConsoleApplication\obj\Debug\net8.0\ConsoleApplication.pdb
 E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\ConsoleApplication\obj\Debug\net8.0\ConsoleApplication.genruntimeconfig.cache
 E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\ConsoleApplication\obj\Debug\net8.0\ref\ConsoleApplication.dll
+E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\ConsoleApplication\bin\Debug\net8.0\FluentValidation.dll
+E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\ConsoleApplication\bin\Debug\net8.0\Diplom.Core.dll
+E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\ConsoleApplication\bin\Debug\net8.0\Diplom.Core.pdb
+E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\ConsoleApplication\bin\Debug\net8.0\MediatR.dll
+E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\ConsoleApplication\bin\Debug\net8.0\MediatR.Contracts.dll

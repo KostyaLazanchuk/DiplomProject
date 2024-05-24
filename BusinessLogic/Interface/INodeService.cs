@@ -1,4 +1,4 @@
-﻿using DataAccess.Models;
+﻿using Diplom.Core.Models;
 
 namespace BusinessLogic.Interface
 {
@@ -9,5 +9,8 @@ namespace BusinessLogic.Interface
         Task<Node> CreateNode(Node node);
         Task<Node> UpdateNode(Guid id, string newNodeName);
         Task<bool> DeleteNode(Guid id);
+        Task<List<Node>> GetNeighbors(Guid id);
+        Task<int> GetDistance(Guid currentNodeId, Guid neighborNodeId);
+        Task<List<Node>> GetAllNodes();
     }
 }

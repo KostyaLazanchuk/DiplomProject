@@ -1,161 +1,263 @@
 ﻿using BusinessLogic.Service;
+using Diplom.Core.Features.Validation;
 using DataAccess.Connection;
-using DataAccess.Const;
-using DataAccess.Models;
+using Diplom.Core.Const;
 using DataAccess.Repositories;
+using Diplom.Core.Models;
+using FluentValidation;
 using System;
 using System.Net.WebSockets;
+using Diplom.Core.Features.NodeFeatures.Command;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+using Diplom.Core.Features.NodeFeatures.Handler;
+using ValidationException = Diplom.Core.Features.NodeFeatures.Command.ValidationException;
+using BusinessLogic.Algorithms;
+using BusinessLogic.Interface;
+using static System.Net.Mime.MediaTypeNames;
 
 internal class Program
 {
     private async static Task Main(string[] args)
     {
+
         // Створення екземпляру сервісу Neo4j
         await using var neo4jService = new Neo4jService(DataConst.ConnectionData.url, DataConst.ConnectionData.user, DataConst.ConnectionData.password);
-
         // Ініціалізація сервісів
         var nodeService = new NodeService(new NodeRepository(neo4jService.Driver));
-        var relationShipService = new RelationshipService(new RelationshipRepository(neo4jService.Driver));
-        var commonService = new CoommonService(new CommonRepository(neo4jService.Driver));
+        var relationShipService = new EdgeService(new EdgeRepository(neo4jService.Driver));
+        var commonService = new CommonService(new CommonRepository(neo4jService.Driver));
 
-        // Створення нового вузла
-/*        var newNode = new Node
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient<IRequestHandler<ValidateNodeCommand, Unit>, ValidateNodeHandler>()
+            .AddTransient<NodeValidator>()
+            .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()))
+            .BuildServiceProvider();
+
+        var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(commonService, nodeService), new DijkstraAlgorithm(nodeService, commonService));
+
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+
+        while (true)
         {
-            Id = Guid.NewGuid(),
-            Name = "New Node"
-        };*/
-        /*        var createdNode = await nodeService.CreateNode(newNode);
-                Console.WriteLine($"Created Node: {createdNode.Name}");*/
+            Console.WriteLine("1. Add Node");
+            Console.WriteLine("2. Add Edge");
+            Console.WriteLine("3. Find Shortest Path (Dijkstra)");
+            Console.WriteLine("4. Find Shortest Path (A*)");
+            Console.WriteLine("5. Delete Node");
+            Console.WriteLine("7. Update Node");
+            Console.WriteLine("8. Update Edge");
+            Console.WriteLine("19. Exit");
+            Console.WriteLine("20. Delete all");
 
-        // Отримання вузла
-        /*        var fetchedNode = await nodeService.GetNodeById(createdNode.Id);
-                Console.WriteLine($"Fetched Node: {fetchedNode.Name}");*/
+            Console.Write("Choose option: ");
+            var choice = Console.ReadLine();
 
-        // Оновлення вузла
-        /*        var updatedNode = await nodeService.UpdateNode(fetchedNode.Id, "Updated Node Name");
-                Console.WriteLine($"Updated Node: {updatedNode.Name}");*/
+            switch (choice)
+            {
+                case "1":
+                    await AddNode(nodeService);
+                    break;
 
-        /*        var findNode = await nodeService.GetNodeById(new Guid("02b98211-c97f-4494-a66d-1f3a59bde75a"));
-                var test1 = findNode;*/
+                case "2":
+                    await AddEdge(relationShipService, nodeService);
+                    break;
 
-        // Видалення вузла
-        /*        var isDeleted = await nodeService.DeleteNode(updatedNode.Id);
-                Console.WriteLine($"Node Deleted: {isDeleted}");*/
+                case "3":
+                    await FindShortestPathDijkstra(nodeService, commonService);
+                    break;
 
-        //await commonService.DeleteAllData();
-        /*        var sourceNodeId = new Guid("141c939b-fb49-4951-8cff-8524b1c72231");
-                var targetNodeId = new Guid("02b98211-c97f-4494-a66d-1f3a59bde75a");
-                await nodeService.CreateFriendshipOneWay(sourceNodeId, targetNodeId);*/
-        var id1 = Guid.NewGuid();
-        var id2 = Guid.NewGuid();
-        var id3 = Guid.NewGuid();
-        var id4 = Guid.NewGuid();
-        var id5 = Guid.NewGuid();
+                case "4":
+                    await FindShortestPathAStar(nodeService, commonService);
+                    break;
+
+                case "5":
+                    await DeleteNode(nodeService);
+                    break;
+
+                case "7":
+                    await UpdateNodeName(nodeService);
+                    break;
+
+                case "8":
+                    //await UpdateEdgeWeight(relationShipService, nodeService);
+                    break;
+
+                case "19":
+                    Environment.Exit(0);
+                    break;
+                case "20":
+                    await DeleteData(commonService);
+                    break;
+
+                default:
+                    Console.WriteLine("Incorrect choice. Try again.");
+                    break;
+            }
+        }
+    }
+
+    private static async Task AddNode(NodeService nodeService)
+    {
+        Console.Write("Input Node Name: ");
+        var nodeName = Console.ReadLine();
+        Console.Write("Input Node Position: ");
+        var nodePosition = int.Parse(Console.ReadLine());
 
         var node = new Node
         {
-            Id = id1,
-            Name = "Server 1",
-            Position = 1,
-            Relationship = new List<Relationship>
-            {
-                new Relationship
-                {
-                    Id = Guid.NewGuid(),
-                    Weight = 2,
-                    EndNode = id2
-                },
-                new Relationship
-                {
-                    Id = Guid.NewGuid(),
-                    Weight = 3,
-                    EndNode = id3
-                }
-                // Добавьте другие отношения вашего узла здесь...
-            }
+            Id = Guid.NewGuid(),
+            Name = nodeName,
+            Position = nodePosition,
+            CreatedOn = DateTime.UtcNow,
+            Edge = new List<Edge>()
         };
 
-        var node2 = new Node
-        {
-            Id = id2,
-            Name = "Server 2",
-            Position = 2,
-            Relationship = new List<Relationship>
-            {
-                new Relationship
-                {
-                    Id = Guid.NewGuid(),
-                    Weight = 5,
-                    EndNode = id4
-                }
-                // Добавьте другие отношения вашего узла здесь...
-            }
-        };
-
-        var node3 = new Node
-        {
-            Id = id3,
-            Name = "Server 3",
-            Position = 2,
-            Relationship = new List<Relationship>
-            {
-                new Relationship
-                {
-                    Id = Guid.NewGuid(),
-                    Weight = 1,
-                    EndNode = id5
-                }
-                // Добавьте другие отношения вашего узла здесь...
-            }
-        };
-
-        var node4 = new Node
-        {
-            Id = id4,
-            Name = "Server 4",
-            Position = 3,
-            Relationship = new List<Relationship>
-            {
-                new Relationship
-                {
-                    Id = Guid.NewGuid(),
-                    Weight = 2,
-                    EndNode = id5
-                }
-                // Добавьте другие отношения вашего узла здесь...
-            }
-        };
-
-        var node5 = new Node
-        {
-            Id = id5,
-            Name = "Server 5",
-            Position = 4,
-            Relationship = new List<Relationship>
-            {
-            }
-        };
-
-        /*      var createdNode = await nodeService.CreateNode(node);
-                var createdNode2 = await nodeService.CreateNode(node2);
-                var createdNode3 = await nodeService.CreateNode(node3);
-                var createdNode4 = await nodeService.CreateNode(node4);
-                var createdNode5 = await nodeService.CreateNode(node5);*/
-
-        await relationShipService.CreateRelationshipOneWay(new Guid("034174d7-13c8-41b6-b932-5ae4c3d37bc5"), new Guid("194d74e3-c61c-4922-bfa1-39399b114ba8"), 6);
-
-        //Console.WriteLine($"Created Node: {createdNode.Name}");
-        //await nodeService.UpdateNodeWithRelationships(node);
-
-        //	8cd2c153-7948-4bb9-b804-e43d7a05d6b2
-        //	141c939b-fb49-4951-8cff-8524b1c72231
-
-        //await nodeService.CreateFriendshipOneToOne(new Guid("f45de6d6-b34a-4e2b-8fa6-9bc5c62ebb5f"), new Guid ("37b2e7a1-5e03-47f9-b99b-8040b383effc"));
-        /*        var test1 = await nodeService.GetNodeById(new Guid("8cd2c153-7948-4bb9-b804-e43d7a05d6b2"));
-                var test2 = test1;
-                Console.WriteLine("Success");*/
-
-        /*        var test1 = await commonService.GetAllNodesWithRelationships();
-                var test2 = test1;*/
+        await nodeService.CreateNode(node);
+        Console.WriteLine("Node added.");
     }
+
+    private static async Task AddEdge(EdgeService edgeService, NodeService nodeService)
+    {
+        Console.Write("Input Source Node Name: ");
+        var node1Name = Console.ReadLine();
+        var node1 = await nodeService.GetNodeByName(node1Name);
+        if (node1 == null)
+        {
+            Console.WriteLine($"Node with name {node1Name} not found.");
+            return;
+        }
+
+        Console.Write("Input Target Node Name: ");
+        var node2Name = Console.ReadLine();
+        var node2 = await nodeService.GetNodeByName(node2Name);
+        if (node2 == null)
+        {
+            Console.WriteLine($"Node with name {node2Name} not found.");
+            return;
+        }
+
+        Console.Write("Input Edge Weight: ");
+        var edgeWeight = int.Parse(Console.ReadLine());
+
+        await edgeService.CreateRelationshipOneWay(node1.Id, node2.Id, edgeWeight);
+        Console.WriteLine("Edge added.");
+    }
+
+    private static async Task FindShortestPathDijkstra(NodeService nodeService, CommonService commonService)
+    {
+        Console.Write("Input Start Node Name: ");
+        var startNodeName = Console.ReadLine();
+        var startNode = await nodeService.GetNodeByName(startNodeName);
+        Console.Write("Input Goal Node Name: ");
+        var goalNodeName = Console.ReadLine();
+        var goalNode = await nodeService.GetNodeByName(goalNodeName);
+
+        var dijkstraAlgorithm = new DijkstraAlgorithm(nodeService, commonService);
+        var path = await dijkstraAlgorithm.FindPathByDijkstra(startNode.Id, goalNode.Id);
+
+        if (path.Any())
+        {
+            Console.WriteLine("Path found:");
+            foreach (var node in path)
+            {
+                Console.Write($"{node.Name} ");
+            }
+            Console.WriteLine();
+        }
+        else
+        {
+            Console.WriteLine("No path found.");
+        }
+    }
+
+    private static async Task FindShortestPathAStar(NodeService nodeService, CommonService commonService)
+    {
+        Console.Write("Input Start Node Name: ");
+        var startNodeName = Console.ReadLine();
+        var startNode = await nodeService.GetNodeByName(startNodeName);
+        Console.Write("Input Goal Node Name: ");
+        var goalNodeName = Console.ReadLine();
+        var goalNode = await nodeService.GetNodeByName(goalNodeName);
+        Func<Node, Node, double> heuristic = (node1, node2) => 0; // Replace with actual heuristic function
+
+        //var path = await aStarAlgorithm.FindPathByAStar(test1, test2, heuristic);
+        var aStarAlgorithm = new AStarAlgorithm(commonService, nodeService);
+        var path = await aStarAlgorithm.FindPathByAStar(startNode.Id, goalNode.Id, heuristic);
+
+        if (path.Any())
+        {
+            Console.WriteLine("Path found:");
+            foreach (var nodeId in path)
+            {
+                var node = await nodeService.GetNodeById(nodeId.Id);
+                Console.Write($"{node.Name} ");
+            }
+            Console.WriteLine();
+        }
+        else
+        {
+            Console.WriteLine("No path found.");
+        }
+    }
+
+    private static async Task DeleteData(CommonService commonService)
+    {
+        await commonService.DeleteAllData();
+    }
+
+    private static async Task DeleteNode(NodeService nodeService)
+    {
+        Console.Write("Input Node Name: ");
+        var nodeName = Console.ReadLine();
+        var node = await nodeService.GetNodeByName(nodeName);
+        await nodeService.DeleteNode(node.Id);
+
+        Console.WriteLine("Node delete.");
+    }
+
+    private static async Task UpdateNodeName(NodeService nodeService)
+    {
+        Console.Write("Input Node Name: ");
+        var nodeNameInput = Console.ReadLine();
+        var node = await nodeService.GetNodeByName(nodeNameInput);
+        Console.Write("Input New Node Name: ");
+        var newNodeName = Console.ReadLine();
+
+        var updatedNode = await nodeService.UpdateNode(node.Id, newNodeName);
+
+        if (updatedNode != null)
+        {
+            Console.WriteLine($"Node updated. New Name: {updatedNode.Name}");
+        }
+        else
+        {
+            Console.WriteLine("Node not found or could not be updated.");
+        }
+    }
+
+/*    private static async Task DeleteEdgeById(EdgeService edgeService)
+    {
+        Console.Write("Input Edge Id to Delete: ");
+        var edgeIdInput = Console.ReadLine();
+        if (Guid.TryParse(edgeIdInput, out var edgeId))
+        {
+            var success = await edgeService.DeleteEdge(edgeId);
+
+            if (success)
+            {
+                Console.WriteLine("Edge deleted.");
+            }
+            else
+            {
+                Console.WriteLine("Edge not found or could not be deleted.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Invalid Id format.");
+        }
+    }*/
 }

@@ -1,6 +1,7 @@
 ﻿using BusinessLogic.Interface;
-using DataAccess.Models;
+using Diplom.Core.Features.Validation;
 using DataAccess.Repositories;
+using Diplom.Core.Models;
 
 namespace BusinessLogic.Service
 {
@@ -18,5 +19,8 @@ namespace BusinessLogic.Service
         public Task<Node> CreateNode(Node node) => _nodeRepository.CreateNode(node);
         public Task<Node> UpdateNode(Guid id, string newNodeName) => _nodeRepository.UpdateNode(id, newNodeName);
         public Task<bool> DeleteNode(Guid id) => _nodeRepository.DeleteNode(id);
+        public Task<List<Node>> GetNeighbors (Guid id) => _nodeRepository.GetNeighbors(id);
+        public Task<int> GetDistance(Guid currentNodeId, Guid neighborNodeId) => _nodeRepository.GetDistance(currentNodeId, neighborNodeId);
+        public Task<List<Node>> GetAllNodes() => _nodeRepository.GetAllNodes();
     }
 }

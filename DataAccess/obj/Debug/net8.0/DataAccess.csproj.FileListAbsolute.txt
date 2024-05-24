@@ -23,3 +23,6 @@ E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\DataAccess\obj\Debug\
 E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\DataAccess\obj\Debug\net8.0\refint\DataAccess.dll
 E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\DataAccess\obj\Debug\net8.0\DataAccess.pdb
 E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\DataAccess\obj\Debug\net8.0\ref\DataAccess.dll
+E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\DataAccess\bin\Debug\net8.0\Diplom.Core.dll
+E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\DataAccess\bin\Debug\net8.0\Diplom.Core.pdb
+E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\DataAccess\obj\Debug\net8.0\DataAccess.csproj.CopyComplete

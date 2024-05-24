@@ -29,3 +29,5 @@ E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\BusinessLogic\obj\Deb
 E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\BusinessLogic\obj\Debug\net8.0\refint\BusinessLogic.dll
 E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\BusinessLogic\obj\Debug\net8.0\BusinessLogic.pdb
 E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\BusinessLogic\obj\Debug\net8.0\ref\BusinessLogic.dll
+E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\BusinessLogic\bin\Debug\net8.0\Diplom.Core.dll
+E:\EdenLab\DiplomProjectF\ConsoleApplication\DiplomProject\BusinessLogic\bin\Debug\net8.0\Diplom.Core.pdb
