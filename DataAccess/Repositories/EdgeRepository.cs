@@ -31,18 +31,30 @@ namespace DataAccess.Repositories
             }
         }
 
-        public async Task CreateEdgeOneToOne(Guid sourceNodeId, Guid targetNodeId)
+        public async Task CreateEdgeOneToOne(Guid sourceNodeId, Guid targetNodeId, int weight1, int weight2)
         {
             var session = _driver.AsyncSession();
             try
             {
                 await session.ExecuteWriteAsync(async tx =>
                 {
+                    var edgeId1 = Guid.NewGuid();
+                    var edgeId2 = Guid.NewGuid();
+
                     await tx.RunAsync(
                         "MATCH (source:Node { id: $sourceNodeId }) " +
                         "MATCH (target:Node { id: $targetNodeId }) " +
-                        "CREATE (source)-[:CONNECTION]->(target), (target)-[:CONNECTION]->(source)",
-                        new { sourceNodeId = sourceNodeId.ToString(), targetNodeId = targetNodeId.ToString() });
+                        "CREATE (source)-[:CONNECTION { id: $edgeId1, weight: $weight1 }]->(target), " +
+                        "(target)-[:CONNECTION { id: $edgeId2, weight: $weight2 }]->(source)",
+                        new
+                        {
+                            sourceNodeId = sourceNodeId.ToString(),
+                            targetNodeId = targetNodeId.ToString(),
+                            edgeId1 = edgeId1.ToString(),
+                            edgeId2 = edgeId2.ToString(),
+                            weight1,
+                            weight2
+                        });
                 });
             }
             finally
@@ -145,6 +157,25 @@ namespace DataAccess.Repositories
                     return deletedCount > 0;
                 });
 
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
+
+        public async Task<int> CountEdges()
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var reader = await tx.RunAsync("MATCH ()-[r:CONNECTION]->() RETURN COUNT(r) as edgeCount");
+                    var record = await reader.SingleAsync();
+                    return record["edgeCount"].As<int>();
+                });
                 return result;
             }
             finally

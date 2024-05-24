@@ -300,5 +300,24 @@ namespace DataAccess.Repositories
             }
         }
 
+        public async Task<int> CountNodes()
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var reader = await tx.RunAsync("MATCH (n:Node) RETURN COUNT(n) as nodeCount");
+                    var record = await reader.SingleAsync();
+                    return record["nodeCount"].As<int>();
+                });
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
+
     }
 }

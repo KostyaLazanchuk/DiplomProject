@@ -12,5 +12,6 @@ namespace BusinessLogic.Interface
         Task<List<Node>> GetNeighbors(Guid id);
         Task<int> GetDistance(Guid currentNodeId, Guid neighborNodeId);
         Task<List<Node>> GetAllNodes();
+        Task<int> CountNodes();
     }
 }

@@ -22,5 +22,6 @@ namespace BusinessLogic.Service
         public Task<List<Node>> GetNeighbors (Guid id) => _nodeRepository.GetNeighbors(id);
         public Task<int> GetDistance(Guid currentNodeId, Guid neighborNodeId) => _nodeRepository.GetDistance(currentNodeId, neighborNodeId);
         public Task<List<Node>> GetAllNodes() => _nodeRepository.GetAllNodes();
+        public Task<int> CountNodes() => _nodeRepository.CountNodes();
     }
 }

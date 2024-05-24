@@ -37,7 +37,6 @@ internal class Program
             .BuildServiceProvider();
 
         var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(commonService, nodeService), new DijkstraAlgorithm(nodeService, commonService));
-
         var mediator = serviceProvider.GetRequiredService<IMediator>();
 
         while (true)
@@ -48,7 +47,10 @@ internal class Program
             Console.WriteLine("4. Find Shortest Path (A*)");
             Console.WriteLine("5. Delete Node");
             Console.WriteLine("7. Update Node");
-            Console.WriteLine("8. Update Edge");
+            Console.WriteLine("8. Count Node");
+            Console.WriteLine("9. Count Edge");
+            Console.WriteLine("11. Add Edges one to one");
+            //Console.WriteLine("12. StressTest");
             Console.WriteLine("19. Exit");
             Console.WriteLine("20. Delete all");
 
@@ -82,8 +84,20 @@ internal class Program
                     break;
 
                 case "8":
-                    //await UpdateEdgeWeight(relationShipService, nodeService);
+                    await CountNodes(nodeService);
                     break;
+
+                case "9":
+                    await CountEdges(relationShipService);
+                    break;
+
+                case "11":
+                    await AddEdgeOneToOne(relationShipService, nodeService);
+                    break;
+
+/*                case "12":
+                    await AddEdgeOneToOne(relationShipService, nodeService);
+                    break;*/
 
                 case "19":
                     Environment.Exit(0);
@@ -103,20 +117,28 @@ internal class Program
     {
         Console.Write("Input Node Name: ");
         var nodeName = Console.ReadLine();
-        Console.Write("Input Node Position: ");
-        var nodePosition = int.Parse(Console.ReadLine());
-
-        var node = new Node
+        if (!string.IsNullOrEmpty(nodeName))
         {
-            Id = Guid.NewGuid(),
-            Name = nodeName,
-            Position = nodePosition,
-            CreatedOn = DateTime.UtcNow,
-            Edge = new List<Edge>()
-        };
+            Console.Write("Input Node Position: ");
+            var nodePosition = int.Parse(Console.ReadLine());
 
-        await nodeService.CreateNode(node);
-        Console.WriteLine("Node added.");
+            var node = new Node
+            {
+                Id = Guid.NewGuid(),
+                Name = nodeName,
+                Position = nodePosition,
+                CreatedOn = DateTime.UtcNow,
+                Edge = new List<Edge>()
+            };
+
+            await nodeService.CreateNode(node);
+            Console.WriteLine("Node added.");
+        }
+        else 
+        {
+            Console.WriteLine("IncorrectInput");
+        }
+
     }
 
     private static async Task AddEdge(EdgeService edgeService, NodeService nodeService)
@@ -238,26 +260,89 @@ internal class Program
         }
     }
 
-/*    private static async Task DeleteEdgeById(EdgeService edgeService)
+    private static async Task CountNodes(NodeService nodeService)
     {
-        Console.Write("Input Edge Id to Delete: ");
-        var edgeIdInput = Console.ReadLine();
-        if (Guid.TryParse(edgeIdInput, out var edgeId))
-        {
-            var success = await edgeService.DeleteEdge(edgeId);
+        var nodeCount = await nodeService.CountNodes();
+        Console.WriteLine($"Total number of nodes: {nodeCount}");
+    }
 
-            if (success)
+    private static async Task CountEdges(EdgeService edgeService)
+    {
+        var edgeCount = await edgeService.CountEdges();
+        Console.WriteLine($"Total number of edges: {edgeCount}");
+    }
+
+    private static async Task AddEdgeOneToOne(EdgeService edgeService, NodeService nodeService)
+    {
+        Console.Write("Input Source Node Name: ");
+        var node1Name = Console.ReadLine();
+        var node1 = await nodeService.GetNodeByName(node1Name);
+        if (node1 == null)
+        {
+            Console.WriteLine($"Node with name {node1Name} not found.");
+            return;
+        }
+
+        Console.Write("Input Target Node Name: ");
+        var node2Name = Console.ReadLine();
+        var node2 = await nodeService.GetNodeByName(node2Name);
+        if (node2 == null)
+        {
+            Console.WriteLine($"Node with name {node2Name} not found.");
+            return;
+        }
+
+        Console.Write("Input Edge Weight from Node1 to Node2: ");
+        var edgeWeight1 = int.Parse(Console.ReadLine());
+
+        Console.Write("Input Edge Weight from Node2 to Node1: ");
+        var edgeWeight2 = int.Parse(Console.ReadLine());
+
+        await edgeService.CreateRelationshipOneToOne(node1.Id, node2.Id, edgeWeight1, edgeWeight2);
+        Console.WriteLine("Edge added.");
+    }
+
+    private static async Task StressTest(List<Node> nodes, NodeService nodeService, CommonService commonService)
+    {
+        var failureProbabilities = new Dictionary<Guid, double>
+    {
+/*        { edgeId1, 0.1 }, // Ймовірність відмови ребра між Node1 та Node2
+        { edgeId2, 0.2 }, // Ймовірність відмови ребра між Node1 та Node3
+        { edgeId3, 0.05 }, // Ймовірність відмови ребра між Node2 та Node5
+        { edgeId4, 0.15 }, // Ймовірність відмови ребра між Node3 та Node4
+        { edgeId5, 0.1 } // Ймовірність відмови ребра між Node4 та Node5*/
+    };
+
+        var monteCarloSimulation = new MonteCarloSimulation(failureProbabilities);
+        var monteCarloService = new SimulationService(monteCarloSimulation);
+
+        Console.WriteLine("Enter number of iterations for Monte Carlo Simulation:");
+        int iterations = int.Parse(Console.ReadLine());
+
+        var reliability = monteCarloService.EvaluateNetworkReliability(nodes, iterations);
+        Console.WriteLine($"Network reliability: {reliability * 100}%");
+    }
+
+    /*    private static async Task DeleteEdgeById(EdgeService edgeService)
+        {
+            Console.Write("Input Edge Id to Delete: ");
+            var edgeIdInput = Console.ReadLine();
+            if (Guid.TryParse(edgeIdInput, out var edgeId))
             {
-                Console.WriteLine("Edge deleted.");
+                var success = await edgeService.DeleteEdge(edgeId);
+
+                if (success)
+                {
+                    Console.WriteLine("Edge deleted.");
+                }
+                else
+                {
+                    Console.WriteLine("Edge not found or could not be deleted.");
+                }
             }
             else
             {
-                Console.WriteLine("Edge not found or could not be deleted.");
+                Console.WriteLine("Invalid Id format.");
             }
-        }
-        else
-        {
-            Console.WriteLine("Invalid Id format.");
-        }
-    }*/
+        }*/
 }
