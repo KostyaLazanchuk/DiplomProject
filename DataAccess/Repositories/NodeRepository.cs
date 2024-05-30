@@ -319,5 +319,58 @@ namespace DataAccess.Repositories
             }
         }
 
+
+        public async Task<int> CountNodesByName(string name)
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var reader = await tx.RunAsync(
+                        "MATCH (n:Node) WHERE n.name STARTS WITH $name RETURN count(n) as nodeCount",
+                        new { name });
+
+                    var record = await reader.SingleAsync();
+                    return record["nodeCount"].As<int>();
+                });
+
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
+
+        public async Task<Guid> GetNodeIdByName(string name)
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var cursor = await tx.RunAsync(
+                        "MATCH (n:Node { name: $name }) RETURN n.id AS id",
+                        new { name });
+
+                    var records = await cursor.ToListAsync();
+
+                    if (records.Any())
+                    {
+                        return Guid.Parse(records.First()["id"].As<string>());
+                    }
+
+                    return Guid.Empty;
+                });
+
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
+
     }
 }

@@ -16,15 +16,17 @@ using ValidationException = Diplom.Core.Features.NodeFeatures.Command.Validation
 using BusinessLogic.Algorithms;
 using BusinessLogic.Interface;
 using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.CompilerServices;
+using BusinessLogic.Graph;
+using System.Reflection.Emit;
+using Neo4j.Driver;
 
 internal class Program
 {
     private async static Task Main(string[] args)
     {
 
-        // Створення екземпляру сервісу Neo4j
         await using var neo4jService = new Neo4jService(DataConst.ConnectionData.url, DataConst.ConnectionData.user, DataConst.ConnectionData.password);
-        // Ініціалізація сервісів
         var nodeService = new NodeService(new NodeRepository(neo4jService.Driver));
         var relationShipService = new EdgeService(new EdgeRepository(neo4jService.Driver));
         var commonService = new CommonService(new CommonRepository(neo4jService.Driver));
@@ -37,6 +39,9 @@ internal class Program
             .BuildServiceProvider();
 
         var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(commonService, nodeService), new DijkstraAlgorithm(nodeService, commonService));
+        var test = new NodeAndEdgeGenerator(nodeService, relationShipService);
+        var test2 = new CartesianProduct(commonService, relationShipService);
+        var test3 = new RootedProduct(nodeService, commonService, relationShipService);
         var mediator = serviceProvider.GetRequiredService<IMediator>();
 
         while (true)
@@ -51,6 +56,10 @@ internal class Program
             Console.WriteLine("9. Count Edge");
             Console.WriteLine("11. Add Edges one to one");
             //Console.WriteLine("12. StressTest");
+            Console.WriteLine("13. List with patter name");
+            Console.WriteLine("15. Rooted Product");
+            Console.WriteLine("17. Cartesian product");
+            Console.WriteLine("18. Random Generator");
             Console.WriteLine("19. Exit");
             Console.WriteLine("20. Delete all");
 
@@ -95,10 +104,21 @@ internal class Program
                     await AddEdgeOneToOne(relationShipService, nodeService);
                     break;
 
-/*                case "12":
-                    await AddEdgeOneToOne(relationShipService, nodeService);
-                    break;*/
-
+                /*                case "12":
+                                    await AddEdgeOneToOne(relationShipService, nodeService);
+                                    break;*/
+                case "13":
+                    await GetListNodeWithPatternName(commonService);
+                    break;
+                case "15":
+                    await RootedProductResult(test3);
+                    break;
+                case "17":
+                    await GetCartesianProductResult(test2);
+                    break;
+                case "18":
+                    await CreateRandomNodesAndEdges(test);
+                    break;
                 case "19":
                     Environment.Exit(0);
                     break;
@@ -134,7 +154,7 @@ internal class Program
             await nodeService.CreateNode(node);
             Console.WriteLine("Node added.");
         }
-        else 
+        else
         {
             Console.WriteLine("IncorrectInput");
         }
@@ -302,26 +322,64 @@ internal class Program
         Console.WriteLine("Edge added.");
     }
 
-    private static async Task StressTest(List<Node> nodes, NodeService nodeService, CommonService commonService)
+    private static async Task GetCartesianProductResult(CartesianProduct cartesianProduct)
     {
-        var failureProbabilities = new Dictionary<Guid, double>
-    {
-/*        { edgeId1, 0.1 }, // Ймовірність відмови ребра між Node1 та Node2
-        { edgeId2, 0.2 }, // Ймовірність відмови ребра між Node1 та Node3
-        { edgeId3, 0.05 }, // Ймовірність відмови ребра між Node2 та Node5
-        { edgeId4, 0.15 }, // Ймовірність відмови ребра між Node3 та Node4
-        { edgeId5, 0.1 } // Ймовірність відмови ребра між Node4 та Node5*/
-    };
-
-        var monteCarloSimulation = new MonteCarloSimulation(failureProbabilities);
-        var monteCarloService = new SimulationService(monteCarloSimulation);
-
-        Console.WriteLine("Enter number of iterations for Monte Carlo Simulation:");
-        int iterations = int.Parse(Console.ReadLine());
-
-        var reliability = monteCarloService.EvaluateNetworkReliability(nodes, iterations);
-        Console.WriteLine($"Network reliability: {reliability * 100}%");
+        Console.Write("Input NodeName 1");
+        var nodeName1 = Console.ReadLine();
+        Console.Write("Input NodeName 2");
+        var nodeName2 = Console.ReadLine();
+        await cartesianProduct.CartesianProductExecution(nodeName1, nodeName2);
     }
+
+    private static async Task GetListNodeWithPatternName(CommonService commonService)
+    {
+        Console.Write("Input pattern name");
+        var name = Console.ReadLine();
+        var nodeList = await commonService.GetNodesByPattern(name);
+        var test1 = nodeList;
+    }
+
+    private static async Task CreateRandomNodesAndEdges(NodeAndEdgeGenerator nodeAndEdgeGenerator)
+    {
+        Console.Write("Input count nodes");
+        var countNode = int.Parse(Console.ReadLine());
+        Console.Write("Input node Name");
+        var nodeName = Console.ReadLine();
+        await nodeAndEdgeGenerator.CreateRandomNodesAndEdges(countNode, nodeName);
+    }
+
+    private static async Task RootedProductResult(RootedProduct rootedProduct)
+    {
+        Console.WriteLine("Input node base Name");
+        var baseNodeName = Console.ReadLine();
+        Console.WriteLine("Input node rooted Name");
+        var rootedNodeName = Console.ReadLine();
+        await rootedProduct.RootedProductExecution(baseNodeName, rootedNodeName);
+    }
+
+
+    /*    private static async Task StressTest(List<Node> nodes, NodeService nodeService, CommonService commonService)
+        {
+            var failureProbabilities = new Dictionary<Guid, double>
+        {
+    *//*        { edgeId1, 0.1 }, // Ймовірність відмови ребра між Node1 та Node2
+            { edgeId2, 0.2 }, // Ймовірність відмови ребра між Node1 та Node3
+            { edgeId3, 0.05 }, // Ймовірність відмови ребра між Node2 та Node5
+            { edgeId4, 0.15 }, // Ймовірність відмови ребра між Node3 та Node4
+            { edgeId5, 0.1 } // Ймовірність відмови ребра між Node4 та Node5*//*
+        };
+
+            var monteCarloSimulation = new MonteCarloSimulation(failureProbabilities);
+            var monteCarloService = new SimulationService(monteCarloSimulation);
+
+            Console.WriteLine("Enter number of iterations for Monte Carlo Simulation:");
+            int iterations = int.Parse(Console.ReadLine());
+
+            var reliability = monteCarloService.EvaluateNetworkReliability(nodes, iterations);
+            Console.WriteLine($"Network reliability: {reliability * 100}%");
+        }*/
+
+
 
     /*    private static async Task DeleteEdgeById(EdgeService edgeService)
         {
@@ -345,4 +403,5 @@ internal class Program
                 Console.WriteLine("Invalid Id format.");
             }
         }*/
+
 }

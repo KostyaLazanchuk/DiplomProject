@@ -11,5 +11,9 @@ namespace BusinessLogic.Interface
     {
         Task DeleteAllData();
         Task<List<Node>> GetAllNodesWithRelationships();
+        Task<List<Node>> GetNodesByPattern(string name);
+        Task<Node> GetNodeByPatternWithMinIndex(string namePattern);
+        Task CreateRootedNodeCopies(Node baseNode, Node rootNode, int index);
+
     }
 }
