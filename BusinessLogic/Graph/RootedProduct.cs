@@ -10,7 +10,7 @@ namespace BusinessLogic.Graph
         private readonly ICommonService _commonService;
         private readonly IEdgeService _edgeService;
         private static readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
-        public RootedProduct(INodeService nodeService, CommonService commonService, EdgeService edgeService) 
+        public RootedProduct(INodeService nodeService, ICommonService commonService, IEdgeService edgeService) 
         {
             _nodeService = nodeService;
             _commonService = commonService;
@@ -18,6 +18,7 @@ namespace BusinessLogic.Graph
         }
         public async Task RootedProductExecution(string baseGraphName, string rootGraphName)
         {
+            var starterRootGraph = await _commonService.GetNodesByPattern(rootGraphName);
             var baseNodes = await _commonService.GetNodesByPattern(baseGraphName);
             var index = 1;
 
@@ -25,9 +26,12 @@ namespace BusinessLogic.Graph
             {
                 var rootNode = await _commonService.GetNodeByPatternWithMinIndex(rootGraphName);
 
-                // Створюємо копії кореневого вузла
                 await _commonService.CreateRootedNodeCopies(baseNode, rootNode, index);
                 index++;
+            }
+            foreach (var starteRoot in starterRootGraph)
+            {
+                await _nodeService.DeleteNode(starteRoot.Id);
             }
         }
     }

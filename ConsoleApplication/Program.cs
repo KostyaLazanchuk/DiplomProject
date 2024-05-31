@@ -38,7 +38,7 @@ internal class Program
             .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()))
             .BuildServiceProvider();
 
-        var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(commonService, nodeService), new DijkstraAlgorithm(nodeService, commonService));
+        var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(commonService, nodeService), new DijkstraAlgorithm(nodeService, commonService), new CheckAnotherWay(nodeService, commonService, new DijkstraAlgorithm(nodeService, commonService)));
         var test = new NodeAndEdgeGenerator(nodeService, relationShipService);
         var test2 = new CartesianProduct(commonService, relationShipService);
         var test3 = new RootedProduct(nodeService, commonService, relationShipService);
@@ -55,8 +55,9 @@ internal class Program
             Console.WriteLine("8. Count Node");
             Console.WriteLine("9. Count Edge");
             Console.WriteLine("11. Add Edges one to one");
-            //Console.WriteLine("12. StressTest");
+            Console.WriteLine("12. MonteCarlo");
             Console.WriteLine("13. List with patter name");
+            Console.WriteLine("14. Find Shortest Path (Dijkstra)");
             Console.WriteLine("15. Rooted Product");
             Console.WriteLine("17. Cartesian product");
             Console.WriteLine("18. Random Generator");
@@ -106,9 +107,15 @@ internal class Program
 
                 /*                case "12":
                                     await AddEdgeOneToOne(relationShipService, nodeService);
-                                    break;*/
+                                    break; MonteCarlo*/
+                case "12":
+                    await MonteCarlo(commonService);
+                    break;
                 case "13":
                     await GetListNodeWithPatternName(commonService);
+                    break;
+                case "14":
+                    await FindShortestPathDijkstraTest(nodeService, commonService);
                     break;
                 case "15":
                     await RootedProductResult(test3);
@@ -357,51 +364,49 @@ internal class Program
         await rootedProduct.RootedProductExecution(baseNodeName, rootedNodeName);
     }
 
-
-    /*    private static async Task StressTest(List<Node> nodes, NodeService nodeService, CommonService commonService)
+    private static async Task MonteCarlo(CommonService commonService)
+    {
+        var nodes = await commonService.GetAllNodesWithRelationships();
+        var failureProbabilities = new Dictionary<Guid, double>();
+        foreach (var node in nodes)
         {
-            var failureProbabilities = new Dictionary<Guid, double>
-        {
-    *//*        { edgeId1, 0.1 }, // Ймовірність відмови ребра між Node1 та Node2
-            { edgeId2, 0.2 }, // Ймовірність відмови ребра між Node1 та Node3
-            { edgeId3, 0.05 }, // Ймовірність відмови ребра між Node2 та Node5
-            { edgeId4, 0.15 }, // Ймовірність відмови ребра між Node3 та Node4
-            { edgeId5, 0.1 } // Ймовірність відмови ребра між Node4 та Node5*//*
-        };
-
-            var monteCarloSimulation = new MonteCarloSimulation(failureProbabilities);
-            var monteCarloService = new SimulationService(monteCarloSimulation);
-
-            Console.WriteLine("Enter number of iterations for Monte Carlo Simulation:");
-            int iterations = int.Parse(Console.ReadLine());
-
-            var reliability = monteCarloService.EvaluateNetworkReliability(nodes, iterations);
-            Console.WriteLine($"Network reliability: {reliability * 100}%");
-        }*/
-
-
-
-    /*    private static async Task DeleteEdgeById(EdgeService edgeService)
-        {
-            Console.Write("Input Edge Id to Delete: ");
-            var edgeIdInput = Console.ReadLine();
-            if (Guid.TryParse(edgeIdInput, out var edgeId))
+            foreach (var edge in node.Edge)
             {
-                var success = await edgeService.DeleteEdge(edgeId);
-
-                if (success)
-                {
-                    Console.WriteLine("Edge deleted.");
-                }
-                else
-                {
-                    Console.WriteLine("Edge not found or could not be deleted.");
-                }
+                // Приклад: всі ребра мають ймовірність відмови 0.1 (10%)
+                failureProbabilities[edge.Id] = 0.1;
             }
-            else
+        }
+
+        var monteCarloSimulation = new MonteCarloSimulation(failureProbabilities);
+        var reliability = monteCarloSimulation.EvaluateNetworkReliability(nodes, 1000);
+        Console.WriteLine($"Network reliability: {reliability:P2}");
+    }
+
+    private static async Task FindShortestPathDijkstraTest(NodeService nodeService, CommonService commonService)
+    {
+        Console.Write("Input Start Node Name: ");
+        var startNodeName = Console.ReadLine();
+        var startNode = await nodeService.GetNodeByName(startNodeName);
+        Console.Write("Input Goal Node Name: ");
+        var goalNodeName = Console.ReadLine();
+        var goalNode = await nodeService.GetNodeByName(goalNodeName);
+
+        var dijkstraAlgorithm = new DijkstraAlgorithm(nodeService, commonService);
+        var checkWay = new CheckAnotherWay(nodeService, commonService, dijkstraAlgorithm);
+        var path = await checkWay.CheckAnotherWayAfterDijkstraExecute(startNode.Id, goalNode.Id);
+
+        if (path.Any())
+        {
+            Console.WriteLine("Path found:");
+            foreach (var node in path)
             {
-                Console.WriteLine("Invalid Id format.");
+                Console.Write($"{node.Name} ");
             }
-        }*/
-
+            Console.WriteLine();
+        }
+        else
+        {
+            Console.WriteLine("No path found.");
+        }
+    }
 }

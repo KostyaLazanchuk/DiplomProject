@@ -25,5 +25,6 @@ namespace BusinessLogic.Service
         public Task<int> CountNodes() => _nodeRepository.CountNodes();
         public Task<int> CountNodesByName(string name) => _nodeRepository.CountNodesByName(name);
         public Task<Guid> GetNodeIdByName(string name) => _nodeRepository.GetNodeIdByName(name);
+        public Task SetNodeColor(Guid nodeId, string color) => _nodeRepository.SetNodeColor(nodeId, color);
     }
 }

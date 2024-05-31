@@ -1,5 +1,8 @@
 ﻿using Diplom.Core.Models;
 using Neo4j.Driver;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DataAccess.Repositories
 {
@@ -72,8 +75,8 @@ namespace DataAccess.Repositories
                 {
                     await tx.RunAsync(
                         "MATCH (n:Node { id: $id }) " +
-                        "SET n.Name = $name, n.SomeOtherProperty = $someOtherValue",
-                        new { id = node.Id.ToString(), name = node.Name, someOtherValue = node.Id.ToString() });
+                        "SET n.name = $name, n.position = $position, n.createdOn = $createdOn, n.color = $color",
+                        new { id = node.Id.ToString(), name = node.Name, position = node.Position, createdOn = node.CreatedOn.ToString("o"), color = node.Color });
 
                     await tx.RunAsync(
                         "MATCH (n:Node { id: $id })-[r]-() DELETE r",
@@ -83,8 +86,8 @@ namespace DataAccess.Repositories
                     {
                         await tx.RunAsync(
                             "MATCH (start:Node { id: $startId }), (end:Node { id: $endId }) " +
-                            "CREATE (start)-[:Weight $weight { weight: $weight }]->(end)",
-                            new { startId = node.Id.ToString(), endId = relationship.EndNode.ToString(), weight = relationship.Weight });
+                            "CREATE (start)-[:CONNECTION { id: $edgeId, weight: $weight }]->(end)",
+                            new { startId = node.Id.ToString(), endId = relationship.EndNode.ToString(), edgeId = relationship.Id.ToString(), weight = relationship.Weight });
                     }
                 });
             }
@@ -97,24 +100,25 @@ namespace DataAccess.Repositories
         public async Task<List<Edge>> GetEdgesByNodeId(Guid nodeId)
         {
             var session = _driver.AsyncSession();
-            var result = await session.RunAsync("MATCH (n:Node {Id: $nodeId})-[:EDGE]->(m) RETURN n, m", new { nodeId });
+            var result = await session.RunAsync(
+                "MATCH (n:Node { id: $nodeId })-[r:CONNECTION]->(m) RETURN r",
+                new { nodeId = nodeId.ToString() });
             var edges = new List<Edge>();
 
             await foreach (var record in result)
             {
-                var edgeNode = record["m"].As<INode>();
+                var relationship = record["r"].As<IRelationship>();
                 edges.Add(new Edge
                 {
-                    Id = Guid.NewGuid(),
-                    Weight = edgeNode.Properties["Weight"].As<int>(),
-                    EndNode = Guid.Parse(edgeNode.Properties["Id"].As<string>())
+                    Id = Guid.Parse(relationship.Properties["id"].As<string>()),
+                    Weight = relationship.Properties["weight"].As<int>(),
+                    EndNode = Guid.Parse(relationship.EndNodeId.ToString())
                 });
             }
 
             return edges;
         }
 
-        //TRASH
         public async Task<bool> UpdateEdgeWeight(Guid edgeId, int newWeight)
         {
             var session = _driver.AsyncSession();
@@ -183,7 +187,5 @@ namespace DataAccess.Repositories
                 await session.CloseAsync();
             }
         }
-
     }
 }
-

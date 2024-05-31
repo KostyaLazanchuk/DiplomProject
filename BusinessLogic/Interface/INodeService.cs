@@ -15,5 +15,6 @@ namespace BusinessLogic.Interface
         Task<int> CountNodes();
         Task<int> CountNodesByName(string name);
         Task<Guid> GetNodeIdByName(string name);
+        Task SetNodeColor(Guid nodeId, string color);
     }
 }

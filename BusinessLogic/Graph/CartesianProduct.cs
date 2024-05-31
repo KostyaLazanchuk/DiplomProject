@@ -1,13 +1,14 @@
-﻿using BusinessLogic.Service;
+﻿using BusinessLogic.Interface;
+using BusinessLogic.Service;
 using Diplom.Core.Models;
 
 namespace BusinessLogic.Graph
 {
     public class CartesianProduct
     {
-        private readonly CommonService _commonService;
-        private readonly EdgeService _edgeService;
-        public CartesianProduct(CommonService commonService, EdgeService edgeService) 
+        private readonly ICommonService _commonService;
+        private readonly IEdgeService _edgeService;
+        public CartesianProduct(ICommonService commonService, IEdgeService edgeService) 
         {
             _commonService = commonService;
             _edgeService = edgeService;

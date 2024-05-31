@@ -24,11 +24,15 @@ namespace Diplom.Core.Const
             public static readonly string EndPointMessage = "EndPoint must not be empty or null";
         }
 
-        //переверь методы (добавь в связи новые + (переделай старые)
-        //добавиь интерполяцию везде (переверь везде)
-        //займись алгоритмами 
-        //дедлайн конец дня 13.05.24 - 14.05.24
-
-
+        public static class Color
+        {
+            public static readonly string Red = "Red";
+            public static readonly string Orange = "Orange";
+            public static readonly string Yellow = "Yellow";
+            public static readonly string Green = "Green";
+            public static readonly string Blue = "Blue";
+            public static readonly string Purple = "Purple";
+            public static readonly string White = "White";
+        }
     }
 }

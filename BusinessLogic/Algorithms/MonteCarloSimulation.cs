@@ -83,27 +83,34 @@ namespace BusinessLogic.Algorithms
                 return false;
 
             var visited = new HashSet<Guid>();
-            var stack = new Stack<Node>();
-            stack.Push(nodes[0]);
+            var components = new List<HashSet<Guid>>();
 
-            while (stack.Count > 0)
+            foreach (var node in nodes)
             {
-                var current = stack.Pop();
-                if (!visited.Contains(current.Id))
+                if (!visited.Contains(node.Id))
                 {
-                    visited.Add(current.Id);
-                    foreach (var edge in current.Edge)
-                    {
-                        var neighbor = nodes.FirstOrDefault(n => n.Id == edge.EndNode);
-                        if (neighbor != null && !visited.Contains(neighbor.Id))
-                        {
-                            stack.Push(neighbor);
-                        }
-                    }
+                    var component = new HashSet<Guid>();
+                    DFS(node, nodes, component, visited);
+                    components.Add(component);
                 }
             }
 
-            return visited.Count == nodes.Count;
+            return components.Count == 1;
+        }
+
+        private void DFS(Node node, List<Node> nodes, HashSet<Guid> component, HashSet<Guid> visited)
+        {
+            visited.Add(node.Id);
+            component.Add(node.Id);
+
+            foreach (var edge in node.Edge)
+            {
+                var neighbor = nodes.FirstOrDefault(n => n.Id == edge.EndNode);
+                if (neighbor != null && !visited.Contains(neighbor.Id))
+                {
+                    DFS(neighbor, nodes, component, visited);
+                }
+            }
         }
     }
 }

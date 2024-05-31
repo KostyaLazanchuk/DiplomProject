@@ -1,27 +1,32 @@
 ﻿using BusinessLogic.Interface;
 using BusinessLogic.Service;
 using Diplom.Core.Models;
-using Neo4j.Driver;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLogic.Algorithms
 {
-    public class DijkstraAlgorithm
+    public class CheckAnotherWay
     {
-        private readonly NodeService _nodeService;
-        private readonly CommonService _commonService;
+        private readonly INodeService _nodeService;
+        private readonly ICommonService _commonService;
+        private readonly DijkstraAlgorithm _dijkstraAlgorithm;
 
-        public DijkstraAlgorithm(NodeService nodeService, CommonService commonService)
+        public CheckAnotherWay(INodeService nodeService, ICommonService commonService, DijkstraAlgorithm dijkstraAlgorithm)
         {
             _nodeService = nodeService;
             _commonService = commonService;
+            _dijkstraAlgorithm = dijkstraAlgorithm;
         }
 
-        public async Task<List<Node>> FindPathByDijkstra(Guid startId, Guid goalId)
+        public async Task<List<Node>> CheckAnotherWayAfterDijkstraExecute(Guid startId, Guid goalId)
+        {
+            var allNodesList = await _commonService.GetAllNodesWithRelationships();
+            var dijkstraAlgorithmList = await _dijkstraAlgorithm.FindPathByDijkstra(startId, goalId);
+            var elementsToRemove = dijkstraAlgorithmList.Skip(1).Take(dijkstraAlgorithmList.Count - 2).Select(n => n.Id);
+            allNodesList.RemoveAll(item => elementsToRemove.Contains(item.Id));
+            return await DijkstraAlgorithmLogic(startId, goalId, allNodesList);
+        }
+
+        private async Task<List<Node>> DijkstraAlgorithmLogic(Guid startId, Guid goalId, List<Node> nodesList)
         {
             var startNode = await GetNodeById(startId);
             var goalNode = await GetNodeById(goalId);
@@ -30,7 +35,7 @@ namespace BusinessLogic.Algorithms
             var previous = new Dictionary<Guid, Guid?>();
             var nodes = new Dictionary<Guid, Node>();
 
-            foreach (var node in await GetAllNodesWithRelationships())
+            foreach (var node in nodesList)
             {
                 distances[node.Id] = int.MaxValue;
                 previous[node.Id] = null;
@@ -82,11 +87,6 @@ namespace BusinessLogic.Algorithms
             return await _nodeService.GetNodeById(id);
         }
 
-        private async Task<List<Node>> GetAllNodesWithRelationships()
-        {
-            return await _commonService.GetAllNodesWithRelationships();
-        }
-
         private async Task<List<Node>> ReconstructPath(Dictionary<Guid, Guid?> previous, Guid goalId)
         {
             var path = new List<Node>();
@@ -110,5 +110,5 @@ namespace BusinessLogic.Algorithms
             return path;
         }
     }
-}
 
+}

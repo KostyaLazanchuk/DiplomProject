@@ -1,5 +1,9 @@
 ﻿using Diplom.Core.Models;
 using Neo4j.Driver;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DataAccess.Repositories
 {
@@ -49,6 +53,9 @@ namespace DataAccess.Repositories
                         {
                             Id = Guid.Parse(nodeProperties["id"].As<string>()),
                             Name = nodeProperties["name"].As<string>(),
+                            Position = int.Parse(nodeProperties["position"].As<string>()),
+                            CreatedOn = DateTime.Parse(nodeProperties["createdOn"].As<string>()),
+                            Color = nodeProperties.ContainsKey("color") ? nodeProperties["color"].As<string>() : string.Empty,
                             Edge = new List<Edge>()
                         };
 
@@ -109,6 +116,7 @@ namespace DataAccess.Repositories
                             Name = nodeProperties["name"].As<string>(),
                             Position = int.Parse(nodeProperties["position"].As<string>()),
                             CreatedOn = DateTime.Parse(nodeProperties["createdOn"].As<string>()),
+                            Color = nodeProperties.ContainsKey("color") ? nodeProperties["color"].As<string>() : string.Empty,
                             Edge = new List<Edge>()
                         };
 
@@ -160,8 +168,9 @@ namespace DataAccess.Repositories
                         {
                             Id = Guid.Parse(nodeProperties["id"].As<string>()),
                             Name = nodeProperties["name"].As<string>(),
-                            Position = int.Parse(nodeProperties["position"].As<string>()), // Assuming the position property exists
-                            CreatedOn = DateTime.Parse(nodeProperties["createdOn"].As<string>()), // Assuming the createdOn property exists
+                            Position = int.Parse(nodeProperties["position"].As<string>()),
+                            CreatedOn = DateTime.Parse(nodeProperties["createdOn"].As<string>()),
+                            Color = nodeProperties.ContainsKey("color") ? nodeProperties["color"].As<string>() : string.Empty,
                             Edge = new List<Edge>()
                         };
 
@@ -196,14 +205,12 @@ namespace DataAccess.Repositories
             {
                 await session.ExecuteWriteAsync(async tx =>
                 {
-                    // Створюємо копію кореневого вузла
                     var newRootNodeId = Guid.NewGuid().ToString();
                     await tx.RunAsync(
-                        "CREATE (n:Node { id: $newRootNodeId, name: $name, position: $position, createdOn: $createdOn })",
-                        new { newRootNodeId, name = $"{rootNode.Name}v{index}", position = rootNode.Position, createdOn = rootNode.CreatedOn.ToString("o") }
+                        "CREATE (n:Node { id: $newRootNodeId, name: $name, position: $position, createdOn: $createdOn, color: $color })",
+                        new { newRootNodeId, name = $"{rootNode.Name}v{index}", position = rootNode.Position, createdOn = rootNode.CreatedOn.ToString("o"), color = rootNode.Color }
                     );
 
-                    // Створюємо ребра між копією кореневого вузла і його сусідами
                     foreach (var edge in rootNode.Edge)
                     {
                         var newEdgeId = Guid.NewGuid().ToString();
@@ -214,7 +221,6 @@ namespace DataAccess.Repositories
                         );
                     }
 
-                    // Додаємо зв'язок між базовим вузлом і копією кореневого вузла
                     var connectionEdgeId = Guid.NewGuid().ToString();
                     await tx.RunAsync(
                         "MATCH (source:Node { id: $baseNodeId }), (target:Node { id: $newRootNodeId }) " +
