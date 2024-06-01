@@ -12,6 +12,7 @@ namespace Diplom.Core.Models
         public required string Name { get; set; }
         public DateTime CreatedOn { get; set; }
         public int Position { get; set; }
+        public string Color { get; set; }
         public List<Edge>? Edge { get; set; }
     }
 }

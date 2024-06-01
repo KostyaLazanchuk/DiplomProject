@@ -11,5 +11,6 @@ namespace BusinessLogic.Interface
     {
         Task<List<Node>> FindPathByAStar(Guid startId, Guid goalId, Func<Node, Node, double> heuristic);
         Task<List<Node>> FindPathByDijkstra(Guid startId, Guid goalId);
+        Task<List<Node>> CheckAnotherWayAfterDijkstraExecute(Guid startId, Guid goalId);
     }
 }

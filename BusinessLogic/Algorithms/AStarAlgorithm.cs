@@ -24,8 +24,8 @@ namespace BusinessLogic.Algorithms
             var gScore = new Dictionary<Node, double>();
             var fScore = new Dictionary<Node, double>();
 
-            var start = await _nodeService.GetNodeById(startId);
-            var goal = await _nodeService.GetNodeById(goalId);
+            var start = await GetNodeById(startId);
+            var goal = await GetNodeById(goalId);
 
             openSet.Add(start);
             gScore[start] = 0;
@@ -44,7 +44,7 @@ namespace BusinessLogic.Algorithms
 
                 foreach (var edge in current.Edge)
                 {
-                    var targetNode = await _nodeService.GetNodeById(edge.EndNode.Value);
+                    var targetNode = await GetNodeById(edge.EndNode.Value);
                     var tentativeGScore = gScore[current] + edge.Weight;
 
                     if (!gScore.ContainsKey(targetNode) || tentativeGScore < gScore[targetNode])
@@ -61,10 +61,10 @@ namespace BusinessLogic.Algorithms
                 }
             }
 
-            return new List<Node>(); // Return an empty list if there is no path
+            return new List<Node>();
         }
 
-        private static Node GetNodeWithLowestFScore(HashSet<Node> openSet, Dictionary<Node, double> fScore)
+        private Node GetNodeWithLowestFScore(HashSet<Node> openSet, Dictionary<Node, double> fScore)
         {
             Node lowest = null;
             double lowestScore = double.PositiveInfinity;
@@ -81,7 +81,7 @@ namespace BusinessLogic.Algorithms
             return lowest;
         }
 
-        private static List<Node> ReconstructPath(Dictionary<Node, Node> cameFrom, Node current)
+        private List<Node> ReconstructPath(Dictionary<Node, Node> cameFrom, Node current)
         {
             var totalPath = new List<Node> { current };
 
@@ -95,25 +95,9 @@ namespace BusinessLogic.Algorithms
             return totalPath;
         }
 
-
-        private async Task<List<Node>> GetNodes()
+        private async Task<Node> GetNodeById(Guid id)
         {
-            return await _commonService.GetAllNodesWithRelationships();
-        }
-
-        private int HeuristicCostEstimate(Node start, Node goal)
-        {
-            return Math.Abs(start.Position - goal.Position);
-        }
-
-        private async Task<List<Node>> GetNeighbors(Guid nodeId)
-        {
-            return await _nodeService.GetNeighbors(nodeId);
-        }
-
-        private async Task<int> GetDistance(Guid currentNodeId, Guid neighborNodeId)
-        {
-            return await _nodeService.GetDistance(currentNodeId, neighborNodeId);
+            return await _nodeService.GetNodeById(id);
         }
     }
 }

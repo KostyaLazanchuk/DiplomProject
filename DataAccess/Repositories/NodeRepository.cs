@@ -1,6 +1,9 @@
 ﻿using Diplom.Core.Models;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Neo4j.Driver;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DataAccess.Repositories
 {
@@ -34,12 +37,13 @@ namespace DataAccess.Repositories
                         Name = nodeProperties["name"].As<string>(),
                         Position = Convert.ToInt32(nodeProperties["position"]),
                         CreatedOn = DateTime.Parse(nodeProperties["createdOn"].As<string>()),
+                        Color = nodeProperties.ContainsKey("color") ? nodeProperties["color"].As<string>() : string.Empty,
                         Edge = new List<Edge>()
                     };
 
                     foreach (var relationshipData in relationships)
                     {
-                        if (relationshipData["id"] != null) // Check if relationship data is not null
+                        if (relationshipData["id"] != null)
                         {
                             var relationship = new Edge
                             {
@@ -54,11 +58,6 @@ namespace DataAccess.Repositories
                     return nodeObject;
                 });
                 return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error occurred: {ex.Message}");
-                throw; // Re-throw the exception to be handled by the caller if needed
             }
             finally
             {
@@ -88,10 +87,12 @@ namespace DataAccess.Repositories
                         Name = nodeProperties.ContainsKey("name") ? nodeProperties["name"].As<string>() : string.Empty,
                         Position = nodeProperties.ContainsKey("position") ? int.Parse(nodeProperties["position"].As<string>()) : 0,
                         CreatedOn = nodeProperties.ContainsKey("createdOn") ? DateTime.Parse(nodeProperties["createdOn"].As<string>()) : DateTime.MinValue,
+                        //Color = nodeProperties.ContainsKey("color") ? nodeProperties["color"].As<string>() : string.Empty,
                         Edge = new List<Edge>()
                     };
 
-                    if(edgesData is null)
+
+                    if (edgesData is null)
                     {
                         foreach (var edgeData in edgesData)
                         {
@@ -116,7 +117,6 @@ namespace DataAccess.Repositories
 
         }
 
-
         public async Task<Node> CreateNode(Node node)
         {
             var session = _driver.AsyncSession();
@@ -127,8 +127,8 @@ namespace DataAccess.Repositories
                     var createdOn = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
 
                     var reader = await tx.RunAsync(
-                        "CREATE (n:Node {id: $id, name: $name, position: $position, createdOn: $createdOn}) RETURN n",
-                        new { id = node.Id.ToString(), name = node.Name, position = node.Position, createdOn });
+                        "CREATE (n:Node {id: $id, name: $name, position: $position, createdOn: $createdOn, color: $color}) RETURN n",
+                        new { id = node.Id.ToString(), name = node.Name, position = node.Position, createdOn, color = node.Color });
                     var record = await reader.SingleAsync();
                     var createdNode = record["n"].As<INode>();
                     return new Node
@@ -137,6 +137,7 @@ namespace DataAccess.Repositories
                         Name = createdNode.Properties["name"].As<string>(),
                         Position = createdNode.Properties["position"].As<int>(),
                         CreatedOn = DateTime.Now,
+                        //Color = createdNode.Properties["color"].As<string>(),
                         Edge = new List<Edge>()
                     };
                 });
@@ -166,6 +167,7 @@ namespace DataAccess.Repositories
                         Name = updatedNode.Properties["name"].As<string>(),
                         Position = int.Parse(updatedNode.Properties["position"].As<string>()),
                         CreatedOn = DateTime.Parse(updatedNode.Properties["createdOn"].As<string>()),
+                        Color = updatedNode.Properties.ContainsKey("color") ? updatedNode.Properties["color"].As<string>() : string.Empty,
                         Edge = new List<Edge>()
                     };
                 });
@@ -227,6 +229,7 @@ namespace DataAccess.Repositories
                         Name = mNode.Properties["name"].As<string>(),
                         CreatedOn = DateTime.Parse(mNode.Properties["createdOn"].As<string>()),
                         Position = int.Parse(mNode.Properties["position"].As<string>()),
+                        Color = mNode.Properties.ContainsKey("color") ? mNode.Properties["color"].As<string>() : string.Empty,
                         Edge = new List<Edge>()
                     };
                     nodes.Add(node);
@@ -285,6 +288,9 @@ namespace DataAccess.Repositories
                         {
                             Id = Guid.Parse(nodeProperties["id"].As<string>()),
                             Name = nodeProperties["name"].As<string>(),
+                            Position = nodeProperties.ContainsKey("position") ? int.Parse(nodeProperties["position"].As<string>()) : 0,
+                            CreatedOn = nodeProperties.ContainsKey("createdOn") ? DateTime.Parse(nodeProperties["createdOn"].As<string>()) : DateTime.MinValue,
+                            Color = nodeProperties.ContainsKey("color") ? nodeProperties["color"].As<string>() : string.Empty,
                             Edge = new List<Edge>()
                         });
                     }
@@ -300,5 +306,119 @@ namespace DataAccess.Repositories
             }
         }
 
+        public async Task<int> CountNodes()
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var reader = await tx.RunAsync("MATCH (n:Node) RETURN COUNT(n) as nodeCount");
+                    var record = await reader.SingleAsync();
+                    return record["nodeCount"].As<int>();
+                });
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
+
+        public async Task<int> CountNodesByName(string name)
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var reader = await tx.RunAsync(
+                        "MATCH (n:Node) WHERE n.name STARTS WITH $name RETURN count(n) as nodeCount",
+                        new { name });
+
+                    var record = await reader.SingleAsync();
+                    return record["nodeCount"].As<int>();
+                });
+
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
+
+        public async Task<Guid> GetNodeIdByName(string name)
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var cursor = await tx.RunAsync(
+                        "MATCH (n:Node { name: $name }) RETURN n.id AS id",
+                        new { name });
+
+                    var records = await cursor.ToListAsync();
+
+                    if (records.Any())
+                    {
+                        return Guid.Parse(records.First()["id"].As<string>());
+                    }
+
+                    return Guid.Empty;
+                });
+
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
+
+        public async Task SetNodeColor(Guid nodeId, string color)
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                await session.ExecuteWriteAsync(async tx =>
+                {
+                    await tx.RunAsync(
+                        "MATCH (n:Node { id: $nodeId }) SET n.color = $color",
+                        new { nodeId = nodeId.ToString(), color });
+                });
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
+
+        public async Task<List<Node>> GetNodesByColorAsync(string color)
+        {
+            var session = _driver.AsyncSession();
+            var query = @"
+            MATCH (n:Node {Color: $color})
+            RETURN n.Id as Id, n.Name as Name, n.Position as Position, n.CreatedOn as CreatedOn, n.Color as Color";
+
+            var result = await session.RunAsync(query, new { color });
+            var nodes = new List<Node>();
+
+            await result.ForEachAsync(record =>
+            {
+                nodes.Add(new Node
+                {
+                    Id = record["Id"].As<Guid>(),
+                    Name = record["Name"].As<string>(),
+                    Position = record["Position"].As<int>(),
+                    CreatedOn = record["CreatedOn"].As<DateTime>(),
+                    Color = record["Color"].As<string>(),
+                    Edge = new List<Edge>()
+                });
+            });
+
+            return nodes;
+        }
     }
 }

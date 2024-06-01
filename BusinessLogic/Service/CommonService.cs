@@ -15,5 +15,8 @@ namespace BusinessLogic.Service
 
         public Task DeleteAllData() => _commonRepository.DeleteAllData();
         public Task<List<Node>> GetAllNodesWithRelationships() => _commonRepository.GetAllNodesWithRelationships();
+        public Task<List<Node>> GetNodesByPattern(string name) => _commonRepository.GetNodesByPattern(name);
+        public Task<Node> GetNodeByPatternWithMinIndex(string namePattern) => _commonRepository.GetNodeByPatternWithMinIndex(namePattern);
+        public Task CreateRootedNodeCopies(Node baseNode, Node rootNode, int index) => _commonRepository.CreateRootedNodeCopies(baseNode, rootNode, index);
     }
 }

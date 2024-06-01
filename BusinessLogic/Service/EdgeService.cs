@@ -19,10 +19,11 @@ namespace BusinessLogic.Service
         }
 
         public Task CreateRelationshipOneWay(Guid sourceNodeId, Guid targetNodeId, int weight) => _relationshipRepository.CreateEdgeOneWay(sourceNodeId, targetNodeId, weight);
-        public Task CreateRelationshipOneToOne(Guid sourceNodeId, Guid targetNodeId) => _relationshipRepository.CreateEdgeOneToOne(sourceNodeId, targetNodeId);
+        public Task CreateRelationshipOneToOne(Guid sourceNodeId, Guid targetNodeId, int weight1, int weight2) => _relationshipRepository.CreateEdgeOneToOne(sourceNodeId, targetNodeId, weight1, weight2);
         public Task UpdateNodeWithRelationships(Node node) => _relationshipRepository.UpdateNodeWithRelationships(node);
         public Task<List<Edge>> GetEdgesByNodeId(Guid nodeId) => _relationshipRepository.GetEdgesByNodeId(nodeId);
         public Task<bool> UpdateEdgeWeight(Guid edgeId, int newWeight) => _relationshipRepository.UpdateEdgeWeight(edgeId, newWeight);
         public Task<bool> DeleteEdge(Guid edgeId) => _relationshipRepository.DeleteEdge(edgeId);
+        public Task<int> CountEdges() => _relationshipRepository.CountEdges();
     }
 }

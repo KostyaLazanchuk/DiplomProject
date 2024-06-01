@@ -16,15 +16,17 @@ using ValidationException = Diplom.Core.Features.NodeFeatures.Command.Validation
 using BusinessLogic.Algorithms;
 using BusinessLogic.Interface;
 using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.CompilerServices;
+using BusinessLogic.Graph;
+using System.Reflection.Emit;
+using Neo4j.Driver;
 
 internal class Program
 {
     private async static Task Main(string[] args)
     {
 
-        // Створення екземпляру сервісу Neo4j
         await using var neo4jService = new Neo4jService(DataConst.ConnectionData.url, DataConst.ConnectionData.user, DataConst.ConnectionData.password);
-        // Ініціалізація сервісів
         var nodeService = new NodeService(new NodeRepository(neo4jService.Driver));
         var relationShipService = new EdgeService(new EdgeRepository(neo4jService.Driver));
         var commonService = new CommonService(new CommonRepository(neo4jService.Driver));
@@ -36,8 +38,10 @@ internal class Program
             .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()))
             .BuildServiceProvider();
 
-        var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(commonService, nodeService), new DijkstraAlgorithm(nodeService, commonService));
-
+        var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(commonService, nodeService), new DijkstraAlgorithm(nodeService, commonService), new CheckAnotherWay(nodeService, commonService, new DijkstraAlgorithm(nodeService, commonService)));
+        var test = new NodeAndEdgeGenerator(nodeService, relationShipService);
+        var test2 = new CartesianProduct(commonService, relationShipService);
+        var test3 = new RootedProduct(nodeService, commonService, relationShipService);
         var mediator = serviceProvider.GetRequiredService<IMediator>();
 
         while (true)
@@ -48,9 +52,18 @@ internal class Program
             Console.WriteLine("4. Find Shortest Path (A*)");
             Console.WriteLine("5. Delete Node");
             Console.WriteLine("7. Update Node");
-            Console.WriteLine("8. Update Edge");
+            Console.WriteLine("8. Count Node");
+            Console.WriteLine("9. Count Edge");
+            Console.WriteLine("11. Add Edges one to one");
+            Console.WriteLine("12. MonteCarlo");
+            Console.WriteLine("13. List with patter name");
+            Console.WriteLine("14. Find Shortest Path (Dijkstra)");
+            Console.WriteLine("15. Rooted Product");
+            Console.WriteLine("17. Cartesian product");
+            Console.WriteLine("18. Random Generator");
             Console.WriteLine("19. Exit");
             Console.WriteLine("20. Delete all");
+            Console.WriteLine("21. FatTree Generator");
 
             Console.Write("Choose option: ");
             var choice = Console.ReadLine();
@@ -82,14 +95,46 @@ internal class Program
                     break;
 
                 case "8":
-                    //await UpdateEdgeWeight(relationShipService, nodeService);
+                    await CountNodes(nodeService);
                     break;
 
+                case "9":
+                    await CountEdges(relationShipService);
+                    break;
+
+                case "11":
+                    await AddEdgeOneToOne(relationShipService, nodeService);
+                    break;
+
+                /*                case "12":
+                                    await AddEdgeOneToOne(relationShipService, nodeService);
+                                    break; MonteCarlo*/
+                case "12":
+                    await MonteCarlo(commonService);
+                    break;
+                case "13":
+                    await GetListNodeWithPatternName(commonService);
+                    break;
+                case "14":
+                    await FindShortestPathDijkstraTest(nodeService, commonService);
+                    break;
+                case "15":
+                    await RootedProductResult(test3);
+                    break;
+                case "17":
+                    await GetCartesianProductResult(test2);
+                    break;
+                case "18":
+                    await CreateRandomNodesAndEdges(test);
+                    break;
                 case "19":
                     Environment.Exit(0);
                     break;
                 case "20":
                     await DeleteData(commonService);
+                    break;
+                case "21":
+                    await CreateFatTree(nodeService, relationShipService, 4);
                     break;
 
                 default:
@@ -103,20 +148,28 @@ internal class Program
     {
         Console.Write("Input Node Name: ");
         var nodeName = Console.ReadLine();
-        Console.Write("Input Node Position: ");
-        var nodePosition = int.Parse(Console.ReadLine());
-
-        var node = new Node
+        if (!string.IsNullOrEmpty(nodeName))
         {
-            Id = Guid.NewGuid(),
-            Name = nodeName,
-            Position = nodePosition,
-            CreatedOn = DateTime.UtcNow,
-            Edge = new List<Edge>()
-        };
+            Console.Write("Input Node Position: ");
+            var nodePosition = int.Parse(Console.ReadLine());
 
-        await nodeService.CreateNode(node);
-        Console.WriteLine("Node added.");
+            var node = new Node
+            {
+                Id = Guid.NewGuid(),
+                Name = nodeName,
+                Position = nodePosition,
+                CreatedOn = DateTime.UtcNow,
+                Edge = new List<Edge>()
+            };
+
+            await nodeService.CreateNode(node);
+            Console.WriteLine("Node added.");
+        }
+        else
+        {
+            Console.WriteLine("IncorrectInput");
+        }
+
     }
 
     private static async Task AddEdge(EdgeService edgeService, NodeService nodeService)
@@ -238,26 +291,133 @@ internal class Program
         }
     }
 
-/*    private static async Task DeleteEdgeById(EdgeService edgeService)
+    private static async Task CountNodes(NodeService nodeService)
     {
-        Console.Write("Input Edge Id to Delete: ");
-        var edgeIdInput = Console.ReadLine();
-        if (Guid.TryParse(edgeIdInput, out var edgeId))
-        {
-            var success = await edgeService.DeleteEdge(edgeId);
+        var nodeCount = await nodeService.CountNodes();
+        Console.WriteLine($"Total number of nodes: {nodeCount}");
+    }
 
-            if (success)
+    private static async Task CountEdges(EdgeService edgeService)
+    {
+        var edgeCount = await edgeService.CountEdges();
+        Console.WriteLine($"Total number of edges: {edgeCount}");
+    }
+
+    private static async Task AddEdgeOneToOne(EdgeService edgeService, NodeService nodeService)
+    {
+        Console.Write("Input Source Node Name: ");
+        var node1Name = Console.ReadLine();
+        var node1 = await nodeService.GetNodeByName(node1Name);
+        if (node1 == null)
+        {
+            Console.WriteLine($"Node with name {node1Name} not found.");
+            return;
+        }
+
+        Console.Write("Input Target Node Name: ");
+        var node2Name = Console.ReadLine();
+        var node2 = await nodeService.GetNodeByName(node2Name);
+        if (node2 == null)
+        {
+            Console.WriteLine($"Node with name {node2Name} not found.");
+            return;
+        }
+
+        Console.Write("Input Edge Weight from Node1 to Node2: ");
+        var edgeWeight1 = int.Parse(Console.ReadLine());
+
+        Console.Write("Input Edge Weight from Node2 to Node1: ");
+        var edgeWeight2 = int.Parse(Console.ReadLine());
+
+        await edgeService.CreateRelationshipOneToOne(node1.Id, node2.Id, edgeWeight1, edgeWeight2);
+        Console.WriteLine("Edge added.");
+    }
+
+    private static async Task GetCartesianProductResult(CartesianProduct cartesianProduct)
+    {
+        Console.Write("Input NodeName 1");
+        var nodeName1 = Console.ReadLine();
+        Console.Write("Input NodeName 2");
+        var nodeName2 = Console.ReadLine();
+        await cartesianProduct.CartesianProductExecution(nodeName1, nodeName2);
+    }
+
+    private static async Task GetListNodeWithPatternName(CommonService commonService)
+    {
+        Console.Write("Input pattern name");
+        var name = Console.ReadLine();
+        var nodeList = await commonService.GetNodesByPattern(name);
+        var test1 = nodeList;
+    }
+
+    private static async Task CreateRandomNodesAndEdges(NodeAndEdgeGenerator nodeAndEdgeGenerator)
+    {
+        Console.Write("Input count nodes");
+        var countNode = int.Parse(Console.ReadLine());
+        Console.Write("Input node Name");
+        var nodeName = Console.ReadLine();
+        await nodeAndEdgeGenerator.CreateRandomNodesAndEdges(countNode, nodeName);
+    }
+
+    private static async Task RootedProductResult(RootedProduct rootedProduct)
+    {
+        Console.WriteLine("Input node base Name");
+        var baseNodeName = Console.ReadLine();
+        Console.WriteLine("Input node rooted Name");
+        var rootedNodeName = Console.ReadLine();
+        await rootedProduct.RootedProductExecution(baseNodeName, rootedNodeName);
+    }
+
+    private static async Task MonteCarlo(CommonService commonService)
+    {
+        var nodes = await commonService.GetAllNodesWithRelationships();
+        var failureProbabilities = new Dictionary<Guid, double>();
+        foreach (var node in nodes)
+        {
+            foreach (var edge in node.Edge)
             {
-                Console.WriteLine("Edge deleted.");
+                // Приклад: всі ребра мають ймовірність відмови 0.1 (10%)
+                failureProbabilities[edge.Id] = 0.1;
             }
-            else
+        }
+
+        var monteCarloSimulation = new MonteCarloSimulation(failureProbabilities);
+        var reliability = monteCarloSimulation.EvaluateNetworkReliability(nodes, 1000);
+        Console.WriteLine($"Network reliability: {reliability:P2}");
+    }
+
+    private static async Task FindShortestPathDijkstraTest(NodeService nodeService, CommonService commonService)
+    {
+        Console.Write("Input Start Node Name: ");
+        var startNodeName = Console.ReadLine();
+        var startNode = await nodeService.GetNodeByName(startNodeName);
+        Console.Write("Input Goal Node Name: ");
+        var goalNodeName = Console.ReadLine();
+        var goalNode = await nodeService.GetNodeByName(goalNodeName);
+
+        var dijkstraAlgorithm = new DijkstraAlgorithm(nodeService, commonService);
+        var checkWay = new CheckAnotherWay(nodeService, commonService, dijkstraAlgorithm);
+        var path = await checkWay.CheckAnotherWayAfterDijkstraExecute(startNode.Id, goalNode.Id);
+
+        if (path.Any())
+        {
+            Console.WriteLine("Path found:");
+            foreach (var node in path)
             {
-                Console.WriteLine("Edge not found or could not be deleted.");
+                Console.Write($"{node.Name} ");
             }
+            Console.WriteLine();
         }
         else
         {
-            Console.WriteLine("Invalid Id format.");
+            Console.WriteLine("No path found.");
         }
-    }*/
+    }
+
+    private static async Task CreateFatTree(NodeService nodeService, EdgeService edgeService, int k)
+    {
+        var fatTreeGenerator = new FatTreeGenerator(nodeService, edgeService);
+        await fatTreeGenerator.GenerateFatTree(k);
+
+    }
 }
