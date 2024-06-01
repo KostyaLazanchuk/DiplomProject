@@ -1,4 +1,5 @@
 ﻿using Diplom.Core.Models;
+using Neo4j.Driver;
 
 namespace BusinessLogic.Interface
 {
@@ -16,5 +17,6 @@ namespace BusinessLogic.Interface
         Task<int> CountNodesByName(string name);
         Task<Guid> GetNodeIdByName(string name);
         Task SetNodeColor(Guid nodeId, string color);
+        Task<List<Node>> GetNodesByColorAsync(string color);
     }
 }

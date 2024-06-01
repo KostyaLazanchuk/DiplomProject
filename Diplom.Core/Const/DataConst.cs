@@ -16,6 +16,7 @@ namespace Diplom.Core.Const
             public static readonly string NameMessage = "Name must not be empty or null";
             public static readonly string IdMessage = "Id must not be empty or null";
             public static readonly string PostionMessage = "Position must not be empty or null";
+            public static readonly string InvalidColor = "Invalid color value.";
         }
 
         public static class ReleationShipMessageValidation

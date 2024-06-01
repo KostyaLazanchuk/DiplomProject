@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BusinessLogic", "BusinessLo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diplom.Core", "Diplom.Core\Diplom.Core.csproj", "{9FC31A14-8CEC-4800-A811-A78CCB31AC9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication", "WebApplication\WebApplication.csproj", "{D9139F99-19EA-41A0-91AE-9F380DF3205D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApplication", "WebApplication\WebApplication.csproj", "{D9139F99-19EA-41A0-91AE-9F380DF3205D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

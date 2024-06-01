@@ -395,8 +395,9 @@ namespace DataAccess.Repositories
             }
         }
 
-        private static async Task<List<Node>> GetNodesByColorAsync(IAsyncSession session, string color)
+        public async Task<List<Node>> GetNodesByColorAsync(string color)
         {
+            var session = _driver.AsyncSession();
             var query = @"
             MATCH (n:Node {Color: $color})
             RETURN n.Id as Id, n.Name as Name, n.Position as Position, n.CreatedOn as CreatedOn, n.Color as Color";

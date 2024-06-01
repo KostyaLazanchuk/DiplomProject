@@ -63,6 +63,7 @@ internal class Program
             Console.WriteLine("18. Random Generator");
             Console.WriteLine("19. Exit");
             Console.WriteLine("20. Delete all");
+            Console.WriteLine("21. FatTree Generator");
 
             Console.Write("Choose option: ");
             var choice = Console.ReadLine();
@@ -131,6 +132,9 @@ internal class Program
                     break;
                 case "20":
                     await DeleteData(commonService);
+                    break;
+                case "21":
+                    await CreateFatTree(nodeService, relationShipService, 4);
                     break;
 
                 default:
@@ -408,5 +412,12 @@ internal class Program
         {
             Console.WriteLine("No path found.");
         }
+    }
+
+    private static async Task CreateFatTree(NodeService nodeService, EdgeService edgeService, int k)
+    {
+        var fatTreeGenerator = new FatTreeGenerator(nodeService, edgeService);
+        await fatTreeGenerator.GenerateFatTree(k);
+
     }
 }
