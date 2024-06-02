@@ -25,5 +25,6 @@ namespace BusinessLogic.Service
         public Task<bool> UpdateEdgeWeight(Guid edgeId, int newWeight) => _relationshipRepository.UpdateEdgeWeight(edgeId, newWeight);
         public Task<bool> DeleteEdge(Guid edgeId) => _relationshipRepository.DeleteEdge(edgeId);
         public Task<int> CountEdges() => _relationshipRepository.CountEdges();
+        public Task<bool> IsEdgeExists(Guid startNodeId, Guid endNodeId) => _relationshipRepository.IsEdgeExists(startNodeId, endNodeId);
     }
 }

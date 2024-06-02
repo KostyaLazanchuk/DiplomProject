@@ -64,6 +64,7 @@ internal class Program
             Console.WriteLine("19. Exit");
             Console.WriteLine("20. Delete all");
             Console.WriteLine("21. FatTree Generator");
+            Console.WriteLine("22. Binarty Connectio Generator");
 
             Console.Write("Choose option: ");
             var choice = Console.ReadLine();
@@ -135,6 +136,9 @@ internal class Program
                     break;
                 case "21":
                     await CreateFatTree(nodeService, relationShipService, 4);
+                    break;
+                case "22":
+                    await BinaryConnectionGenerator(nodeService, relationShipService);
                     break;
 
                 default:
@@ -417,7 +421,21 @@ internal class Program
     private static async Task CreateFatTree(NodeService nodeService, EdgeService edgeService, int k)
     {
         var fatTreeGenerator = new FatTreeGenerator(nodeService, edgeService);
-        await fatTreeGenerator.GenerateFatTree(k);
+        Console.Write("Enter the number of Core nodes: ");
+        if (int.TryParse(Console.ReadLine(), out int coreCount))
+        {
+            await fatTreeGenerator.GenerateFatTree(coreCount);
+        }
+        else
+        {
+            Console.WriteLine("Invalid number of Core nodes.");
+        }
+    }
 
+    private static async Task BinaryConnectionGenerator(NodeService nodeService, EdgeService edgeService)
+    {
+        var generator = new BinaryConnectionGenerator(nodeService, edgeService);
+        int serverCount = 32;
+        await generator.GenerateBinaryConnections(serverCount);
     }
 }

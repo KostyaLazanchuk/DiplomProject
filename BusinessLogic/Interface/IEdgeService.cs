@@ -16,5 +16,6 @@ namespace BusinessLogic.Interface
         Task<bool> UpdateEdgeWeight(Guid edgeId, int newWeight);
         Task<bool> DeleteEdge(Guid edgeId);
         Task<int> CountEdges();
+        Task<bool> IsEdgeExists(Guid startNodeId, Guid endNodeId);
     }
 }
