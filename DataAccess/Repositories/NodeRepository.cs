@@ -420,5 +420,56 @@ namespace DataAccess.Repositories
 
             return nodes;
         }
+
+        public async Task<Node> GetNodeByPosition(int position)
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var reader = await tx.RunAsync(
+                        "MATCH (n:Node { position: $position }) RETURN n",
+                        new { position });
+
+                    var record = await reader.SingleAsync();
+
+                    var nodeProperties = record["n"].As<INode>().Properties;
+
+                    var nodeObject = new Node
+                    {
+                        Id = Guid.Parse(nodeProperties["id"].As<string>()),
+                        Name = nodeProperties["name"].As<string>(),
+                        Position = nodeProperties["position"].As<int>(),
+                        CreatedOn = DateTime.Parse(nodeProperties["createdOn"].As<string>()),
+                        Edge = new List<Edge>()
+                    };
+
+                    // Optionally, you can load the edges if needed
+                    var edgeReader = await tx.RunAsync(
+                        "MATCH (n:Node { position: $position })-[r]->(m) RETURN r, m",
+                        new { position });
+
+                    await edgeReader.ForEachAsync(edgeRecord =>
+                    {
+                        var edge = new Edge
+                        {
+                            Id = Guid.Parse(edgeRecord["r"].As<IRelationship>().Properties["id"].As<string>()),
+                            Weight = edgeRecord["r"].As<IRelationship>().Properties["weight"].As<int>(),
+                            EndNode = Guid.Parse(edgeRecord["m"].As<INode>().Properties["id"].As<string>())
+                        };
+                        nodeObject.Edge.Add(edge);
+                    });
+
+                    return nodeObject;
+                });
+
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
     }
 }

@@ -21,19 +21,22 @@ namespace BusinessLogic.Graph
             _index = 1;
         }
 
-        public async Task GenerateFatTree(int pods)
+        public async Task GenerateFatTree(int coreCount)
         {
+            int pods = coreCount;
             var coreNodes = new List<Node>();
             var aggNodes = new List<Node>();
             var accessNodes = new List<Node>();
             var serverNodes = new List<Node>();
 
-            for (int i = 0; i < 4; i++)
+            // Create Core nodes
+            for (int i = 0; i < coreCount; i++)
             {
                 var coreNode = await CreateNode($"Core{i + 1}");
                 coreNodes.Add(coreNode);
             }
 
+            // Create Aggregation and Access nodes
             for (int pod = 0; pod < pods; pod++)
             {
                 var aggNode1 = await CreateNode($"Agg{_index++}");
@@ -46,28 +49,33 @@ namespace BusinessLogic.Graph
                 accessNodes.Add(accessNode1);
                 accessNodes.Add(accessNode2);
 
-                for (int i = 0; i < 4; i++)
+                // Connect Aggregation to Core
+                for (int i = 0; i < coreCount; i++)
                 {
                     await CreateEdge(coreNodes[i].Id, aggNode1.Id);
                     await CreateEdge(coreNodes[i].Id, aggNode2.Id);
                 }
 
+                // Connect Access to Aggregation
                 await CreateEdge(aggNode1.Id, accessNode1.Id);
                 await CreateEdge(aggNode1.Id, accessNode2.Id);
                 await CreateEdge(aggNode2.Id, accessNode1.Id);
                 await CreateEdge(aggNode2.Id, accessNode2.Id);
 
-                for (int i = 0; i < 2; i++)
-                {
-                    var serverNode1 = await CreateNode($"Server{_index++}");
-                    var serverNode2 = await CreateNode($"Server{_index++}");
-                    serverNodes.Add(serverNode1);
-                    serverNodes.Add(serverNode2);
-                    await CreateEdge(accessNode1.Id, serverNode1.Id);
-                    await CreateEdge(accessNode1.Id, serverNode2.Id);
-                    await CreateEdge(accessNode2.Id, serverNode1.Id);
-                    await CreateEdge(accessNode2.Id, serverNode2.Id);
-                }
+                // Create and Connect Servers to Access
+                var serverNode1 = await CreateNode($"Server{_index++}");
+                var serverNode2 = await CreateNode($"Server{_index++}");
+                serverNodes.Add(serverNode1);
+                serverNodes.Add(serverNode2);
+                await CreateEdge(accessNode1.Id, serverNode1.Id);
+                await CreateEdge(accessNode1.Id, serverNode2.Id);
+
+                serverNode1 = await CreateNode($"Server{_index++}");
+                serverNode2 = await CreateNode($"Server{_index++}");
+                serverNodes.Add(serverNode1);
+                serverNodes.Add(serverNode2);
+                await CreateEdge(accessNode2.Id, serverNode1.Id);
+                await CreateEdge(accessNode2.Id, serverNode2.Id);
             }
         }
 

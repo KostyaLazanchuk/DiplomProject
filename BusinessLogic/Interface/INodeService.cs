@@ -18,5 +18,6 @@ namespace BusinessLogic.Interface
         Task<Guid> GetNodeIdByName(string name);
         Task SetNodeColor(Guid nodeId, string color);
         Task<List<Node>> GetNodesByColorAsync(string color);
+        Task<Node> GetNodeByPosition(int position);
     }
 }

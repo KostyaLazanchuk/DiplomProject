@@ -27,5 +27,6 @@ namespace BusinessLogic.Service
         public Task<Guid> GetNodeIdByName(string name) => _nodeRepository.GetNodeIdByName(name);
         public Task SetNodeColor(Guid nodeId, string color) => _nodeRepository.SetNodeColor(nodeId, color);
         public Task<List<Node>> GetNodesByColorAsync(string color) => _nodeRepository.GetNodesByColorAsync(color);
+        public Task<Node> GetNodeByPosition(int position) => _nodeRepository.GetNodeByPosition(position);
     }
 }

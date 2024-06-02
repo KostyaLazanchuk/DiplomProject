@@ -187,5 +187,28 @@ namespace DataAccess.Repositories
                 await session.CloseAsync();
             }
         }
+
+        public async Task<bool> IsEdgeExists(Guid startNodeId, Guid endNodeId)
+        {
+            var session = _driver.AsyncSession();
+            try
+            {
+                var result = await session.ExecuteReadAsync(async tx =>
+                {
+                    var reader = await tx.RunAsync(
+                        "MATCH (start:Node { id: $startNodeId })-[r]->(end:Node { id: $endNodeId }) RETURN COUNT(r) > 0 AS exists",
+                        new { startNodeId = startNodeId.ToString(), endNodeId = endNodeId.ToString() });
+
+                    var record = await reader.SingleAsync();
+                    return record["exists"].As<bool>();
+                });
+
+                return result;
+            }
+            finally
+            {
+                await session.CloseAsync();
+            }
+        }
     }
 }
