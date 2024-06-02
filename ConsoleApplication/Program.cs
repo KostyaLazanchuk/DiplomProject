@@ -38,7 +38,7 @@ internal class Program
             .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()))
             .BuildServiceProvider();
 
-        var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(commonService, nodeService), new DijkstraAlgorithm(nodeService, commonService), new CheckAnotherWay(nodeService, commonService, new DijkstraAlgorithm(nodeService, commonService)));
+        var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(commonService, nodeService), new DijkstraAlgorithm(nodeService, commonService), new CheckAnotherWay(nodeService, commonService, new DijkstraAlgorithmService(nodeService, commonService)));
         var test = new NodeAndEdgeGenerator(nodeService, relationShipService);
         var test2 = new CartesianProduct(commonService, relationShipService);
         var test3 = new RootedProduct(nodeService, commonService, relationShipService);
@@ -399,7 +399,7 @@ internal class Program
         var goalNodeName = Console.ReadLine();
         var goalNode = await nodeService.GetNodeByName(goalNodeName);
 
-        var dijkstraAlgorithm = new DijkstraAlgorithm(nodeService, commonService);
+        var dijkstraAlgorithm = new DijkstraAlgorithmService(nodeService, commonService);
         var checkWay = new CheckAnotherWay(nodeService, commonService, dijkstraAlgorithm);
         var path = await checkWay.CheckAnotherWayAfterDijkstraExecute(startNode.Id, goalNode.Id);
 

@@ -1,4 +1,5 @@
-﻿using BusinessLogic.Service;
+﻿using BusinessLogic.Interface;
+using BusinessLogic.Service;
 using Diplom.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -10,11 +11,11 @@ namespace BusinessLogic.Graph
 {
     public class FatTreeGenerator
     {
-        private NodeService _nodeService;
-        private EdgeService _edgeService;
+        private INodeService _nodeService;
+        private IEdgeService _edgeService;
         private int _index;
 
-        public FatTreeGenerator(NodeService nodeService, EdgeService edgeService)
+        public FatTreeGenerator(INodeService nodeService, IEdgeService edgeService)
         {
             _nodeService = nodeService;
             _edgeService = edgeService;
