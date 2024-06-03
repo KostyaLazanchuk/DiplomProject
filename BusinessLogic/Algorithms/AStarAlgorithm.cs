@@ -7,12 +7,10 @@ namespace BusinessLogic.Algorithms
 {
     public class AStarAlgorithm
     {
-        private readonly ICommonService _commonService;
         private readonly INodeService _nodeService;
 
         public AStarAlgorithm(ICommonService commonService, INodeService nodeService)
         {
-            _commonService = commonService;
             _nodeService = nodeService;
         }
 

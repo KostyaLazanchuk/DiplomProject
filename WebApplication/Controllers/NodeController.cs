@@ -1,7 +1,10 @@
 ﻿using BusinessLogic.Service;
 using DataAccess.Repositories;
+using Diplom.Core.Features.NodeFeatures.Command;
 using Diplom.Core.Models;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using WebApplication.ModelsAPI;
 
 namespace WebApplication.Controllers
 {
@@ -12,12 +15,14 @@ namespace WebApplication.Controllers
         private readonly NodeService _nodeService;
         private readonly EdgeService _edgeService;
         private readonly CommonRepository _commonRepository;
+        private readonly IMediator _mediator;
 
-        public NodeController(NodeService nodeService, EdgeService edgeService, CommonRepository commonRepository)
+        public NodeController(NodeService nodeService, EdgeService edgeService, CommonRepository commonRepository, IMediator mediator)
         {
             _nodeService = nodeService;
             _edgeService = edgeService;
             _commonRepository = commonRepository;
+            _mediator = mediator;
         }
 
         // Додавання нових вузлів зі зв'язками
@@ -68,6 +73,37 @@ namespace WebApplication.Controllers
                 return NotFound();
             }
             return Ok(node);
+        }
+
+        [HttpPost]
+        [Route("add")]
+        public async Task<IActionResult> AddNode([FromForm] NodeCreateAPI nodeAPI)
+        {
+            try
+            {
+                var node = new Node
+                {
+                    Id = Guid.NewGuid(),
+                    Name = nodeAPI.Name,
+                    Position = nodeAPI.Position,
+                    CreatedOn = DateTime.UtcNow
+                };
+
+                var validationCommand = new ValidateNodeCommand(node);
+                await _mediator.Send(validationCommand);
+
+                await _nodeService.CreateNode(node);
+
+                return Ok(new { Message = "Node added.", Node = node });
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { Errors = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Errors = ex.Message });
+            }
         }
     }
 }

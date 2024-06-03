@@ -1,14 +1,15 @@
-﻿using BusinessLogic.Service;
+﻿using BusinessLogic.Interface;
+using BusinessLogic.Service;
 using Diplom.Core.Models;
 
 namespace BusinessLogic.Graph
 {
     public class BinaryConnectionGenerator
     {
-        private NodeService _nodeService;
-        private EdgeService _edgeService;
+        private INodeService _nodeService;
+        private IEdgeService _edgeService;
 
-        public BinaryConnectionGenerator(NodeService nodeService, EdgeService edgeService)
+        public BinaryConnectionGenerator(INodeService nodeService, IEdgeService edgeService)
         {
             _nodeService = nodeService;
             _edgeService = edgeService;
