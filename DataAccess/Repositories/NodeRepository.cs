@@ -87,24 +87,23 @@ namespace DataAccess.Repositories
                         Name = nodeProperties.ContainsKey("name") ? nodeProperties["name"].As<string>() : string.Empty,
                         Position = nodeProperties.ContainsKey("position") ? int.Parse(nodeProperties["position"].As<string>()) : 0,
                         CreatedOn = nodeProperties.ContainsKey("createdOn") ? DateTime.Parse(nodeProperties["createdOn"].As<string>()) : DateTime.MinValue,
-                        //Color = nodeProperties.ContainsKey("color") ? nodeProperties["color"].As<string>() : string.Empty,
                         Edge = new List<Edge>()
                     };
 
-
-                    if (edgesData is null)
+                    if (edgesData != null)
                     {
                         foreach (var edgeData in edgesData)
                         {
                             var edge = new Edge
                             {
-                                Id = edgeData.ContainsKey("id") ? Guid.Parse(edgeData["id"].ToString()) : Guid.Empty,
-                                Weight = edgeData.ContainsKey("weight") ? Convert.ToInt32(edgeData["weight"]) : 0,
-                                EndNode = edgeData.ContainsKey("endNode") ? Guid.Parse(edgeData["endNode"].ToString()) : (Guid?)null
+                                Id = edgeData.ContainsKey("id") && edgeData["id"] != null ? Guid.Parse(edgeData["id"].ToString()) : Guid.Empty,
+                                Weight = edgeData.ContainsKey("weight") && edgeData["weight"] != null ? Convert.ToInt32(edgeData["weight"]) : 0,
+                                EndNode = edgeData.ContainsKey("endNode") && edgeData["endNode"] != null ? Guid.Parse(edgeData["endNode"].ToString()) : (Guid?)null
                             };
                             nodeObject.Edge.Add(edge);
                         }
                     }
+
                     return nodeObject;
                 });
 
@@ -114,7 +113,6 @@ namespace DataAccess.Repositories
             {
                 await session.CloseAsync();
             }
-
         }
 
         public async Task<Node> CreateNode(Node node)
