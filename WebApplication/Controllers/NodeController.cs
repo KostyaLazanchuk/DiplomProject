@@ -27,7 +27,7 @@ namespace WebApplication.Controllers
         }
 
         [HttpPost("create-nodes-with-edges")]
-        public async Task<IActionResult> CreateNodesWithEdges([FromBody] List<Node> nodes)
+        public async Task<IActionResult> CreateNodesWithEdges([FromForm] List<Node> nodes)
         {
             await _commonService.DeleteAllData();
             if (nodes == null || nodes.Count == 0)
@@ -105,7 +105,7 @@ namespace WebApplication.Controllers
 
         [HttpDelete]
         [Route("delete")]
-        public async Task<IActionResult> DeleteNode([FromBody] DeleteNodeRequest request)
+        public async Task<IActionResult> DeleteNode([FromForm] DeleteNodeRequest request)
         {
             var node = await _nodeService.GetNodeByName(request.NodeName);
             if (node == null)
@@ -135,17 +135,17 @@ namespace WebApplication.Controllers
 
         [HttpPut]
         [Route("update-name")]
-        public async Task<IActionResult> UpdateNodeName([FromForm] string nodeNameInput, [FromForm] string newNodeName)
+        public async Task<IActionResult> UpdateNodeName([FromForm] UpdateNodeRequest request)
         {
             try
             {
-                var node = await _nodeService.GetNodeByName(nodeNameInput);
+                var node = await _nodeService.GetNodeByName(request.nodeNameInput);
                 if (node == null)
                 {
-                    return NotFound(new { Message = $"Node with name {nodeNameInput} not found." });
+                    return NotFound(new { Message = $"Node with name {request.nodeNameInput} not found." });
                 }
 
-                var updatedNode = await _nodeService.UpdateNode(node.Id, newNodeName);
+                var updatedNode = await _nodeService.UpdateNode(node.Id, request.newNodeName);
 
                 if (updatedNode != null)
                 {
@@ -164,7 +164,7 @@ namespace WebApplication.Controllers
 
         [HttpGet]
         [Route("nodes-by-pattern")]
-        public async Task<IActionResult> GetListNodeWithPatternName([FromQuery] string pattern)
+        public async Task<IActionResult> GetListNodeWithPatternName([FromForm] string pattern)
         {
             try
             {
@@ -188,6 +188,12 @@ namespace WebApplication.Controllers
         public class DeleteNodeRequest
         {
             public string NodeName { get; set; }
+        }
+
+        public class UpdateNodeRequest
+        {
+            public string newNodeName { get; set; }
+            public string nodeNameInput { get; set; }
         }
     }
 }

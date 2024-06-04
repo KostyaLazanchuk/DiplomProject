@@ -77,8 +77,13 @@ internal class Program
 
         app.UseHttpsRedirection();
         app.UseRouting();
-        app.UseCors("AllowAllOrigins");
-        app.UseAuthorization();
+        app.UseCors(op =>
+        {
+            op.AllowAnyHeader();
+            op.AllowAnyMethod();
+            op.AllowAnyOrigin();
+        });
+        //app.UseAuthorization();
         app.MapControllerRoute(
             name: "default",
             pattern: "{controller=Home}/{action=Index}/{id?}");
