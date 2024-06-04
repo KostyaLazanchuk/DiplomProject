@@ -8,9 +8,9 @@ namespace BusinessLogic.Algorithms
     {
         private readonly INodeService _nodeService;
         private readonly ICommonService _commonService;
-        private readonly DijkstraAlgorithm _dijkstraAlgorithm;
+        private readonly IDijkstraAlgorithm _dijkstraAlgorithm;
 
-        public CheckAnotherWay(INodeService nodeService, ICommonService commonService, DijkstraAlgorithm dijkstraAlgorithm)
+        public CheckAnotherWay(INodeService nodeService, ICommonService commonService, IDijkstraAlgorithm dijkstraAlgorithm)
         {
             _nodeService = nodeService;
             _commonService = commonService;
@@ -30,6 +30,11 @@ namespace BusinessLogic.Algorithms
         {
             var startNode = await GetNodeById(startId);
             var goalNode = await GetNodeById(goalId);
+
+            if (startNode == null || goalNode == null)
+            {
+                return new List<Node>();
+            }
 
             var distances = new Dictionary<Guid, int>();
             var previous = new Dictionary<Guid, Guid?>();
@@ -81,7 +86,6 @@ namespace BusinessLogic.Algorithms
             return new List<Node>();
         }
 
-
         private async Task<Node> GetNodeById(Guid id)
         {
             return await _nodeService.GetNodeById(id);
@@ -110,5 +114,4 @@ namespace BusinessLogic.Algorithms
             return path;
         }
     }
-
 }

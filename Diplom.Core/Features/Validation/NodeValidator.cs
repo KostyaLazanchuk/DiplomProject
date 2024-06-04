@@ -11,10 +11,10 @@ namespace Diplom.Core.Features.Validation
             RuleFor(x => x.Name).NotEmpty().WithMessage(DataConst.NodeMessageValidation.NameMessage);
             RuleFor(x => x.Id).NotEmpty().WithMessage(DataConst.NodeMessageValidation.IdMessage);
             RuleFor(x => x.Position).NotEmpty().WithMessage(DataConst.NodeMessageValidation.PostionMessage);
-            RuleFor(node => node.Color).Must(IsColorisChosen).WithMessage(DataConst.NodeMessageValidation.InvalidColor);
+            //RuleFor(node => node.Color).Must(IsColorisChosen).WithMessage(DataConst.NodeMessageValidation.InvalidColor);
         }
 
-        private bool IsColorisChosen(string color)
+/*        private bool IsColorisChosen(string color)
         {
             var validColors = new List<string>
             {
@@ -28,6 +28,6 @@ namespace Diplom.Core.Features.Validation
             };
 
             return validColors.Contains(color);
-        }
+        }*/
     }
 }

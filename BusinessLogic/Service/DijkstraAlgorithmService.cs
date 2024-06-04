@@ -1,21 +1,19 @@
 ﻿using BusinessLogic.Interface;
-using BusinessLogic.Service;
 using Diplom.Core.Models;
-using Neo4j.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLogic.Algorithms
+namespace BusinessLogic.Service
 {
-    public class DijkstraAlgorithm
+    public class DijkstraAlgorithmService : IDijkstraAlgorithm
     {
         private readonly INodeService _nodeService;
         private readonly ICommonService _commonService;
 
-        public DijkstraAlgorithm(INodeService nodeService, ICommonService commonService)
+        public DijkstraAlgorithmService(INodeService nodeService, ICommonService commonService)
         {
             _nodeService = nodeService;
             _commonService = commonService;
@@ -25,11 +23,6 @@ namespace BusinessLogic.Algorithms
         {
             var startNode = await GetNodeById(startId);
             var goalNode = await GetNodeById(goalId);
-
-            if (startNode == null || goalNode == null)
-            {
-                return new List<Node>();
-            }
 
             var distances = new Dictionary<Guid, int>();
             var previous = new Dictionary<Guid, Guid?>();
@@ -81,7 +74,6 @@ namespace BusinessLogic.Algorithms
             return new List<Node>();
         }
 
-
         private async Task<Node> GetNodeById(Guid id)
         {
             return await _nodeService.GetNodeById(id);
@@ -116,4 +108,3 @@ namespace BusinessLogic.Algorithms
         }
     }
 }
-
