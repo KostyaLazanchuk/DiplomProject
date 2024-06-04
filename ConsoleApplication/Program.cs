@@ -38,7 +38,7 @@ internal class Program
             .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()))
             .BuildServiceProvider();
 
-        var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(commonService, nodeService), new DijkstraAlgorithm(nodeService, commonService), new CheckAnotherWay(nodeService, commonService, new DijkstraAlgorithmService(nodeService, commonService)));
+        var aStarAlgorithm = new AlgorithmService(new AStarAlgorithm(nodeService), new DijkstraAlgorithm(nodeService, commonService), new CheckAnotherWay(nodeService, commonService, new DijkstraAlgorithmService(nodeService, commonService)));
         var test = new NodeAndEdgeGenerator(nodeService, relationShipService);
         var test2 = new CartesianProduct(commonService, relationShipService);
         var test3 = new RootedProduct(nodeService, commonService, relationShipService);
@@ -120,7 +120,7 @@ internal class Program
                     await GetListNodeWithPatternName(commonService);
                     break;
                 case "14":
-                    await FindShortestPathDijkstraTest(nodeService, commonService);
+                    await CheckAnotherWay(nodeService, commonService);
                     break;
                 case "15":
                     await RootedProductResult(test3);
@@ -253,7 +253,7 @@ internal class Program
         Func<Node, Node, double> heuristic = (node1, node2) => 0; // Replace with actual heuristic function
 
         //var path = await aStarAlgorithm.FindPathByAStar(test1, test2, heuristic);
-        var aStarAlgorithm = new AStarAlgorithm(commonService, nodeService);
+        var aStarAlgorithm = new AStarAlgorithm(nodeService);
         var path = await aStarAlgorithm.FindPathByAStar(startNode.Id, goalNode.Id, heuristic);
 
         if (path.Any())
@@ -402,7 +402,7 @@ internal class Program
         Console.WriteLine($"Network reliability: {reliability:P2}");
     }
 
-    private static async Task FindShortestPathDijkstraTest(NodeService nodeService, CommonService commonService)
+    private static async Task CheckAnotherWay(NodeService nodeService, CommonService commonService)
     {
         Console.Write("Input Start Node Name: ");
         var startNodeName = Console.ReadLine();
@@ -447,7 +447,7 @@ internal class Program
     private static async Task BinaryConnectionGenerator(NodeService nodeService, EdgeService edgeService)
     {
         var generator = new BinaryConnectionGenerator(nodeService, edgeService);
-        int serverCount = 32;
+        int serverCount = 128;
         await generator.GenerateBinaryConnections(serverCount);
     }
 

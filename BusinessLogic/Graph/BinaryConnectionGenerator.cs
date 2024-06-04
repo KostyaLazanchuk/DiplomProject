@@ -20,7 +20,6 @@ namespace BusinessLogic.Graph
             var nodes = new List<Node>();
             var binaryStrings = new List<string>();
 
-            // Create nodes with positions and store their binary representations
             for (var i = 0; i < serverCount; i++)
             {
                 var node = new Node
@@ -33,13 +32,10 @@ namespace BusinessLogic.Graph
                 await _nodeService.CreateNode(node);
                 nodes.Add(node);
 
-                // Convert position to binary string and store it
                 string binary = Convert.ToString(i, 2).PadLeft((int)Math.Ceiling(Math.Log2(serverCount)), '0');
                 binaryStrings.Add(binary);
             }
 
-            //Console.WriteLine("Decimal\tBinary\tShift 0\tShift 1");
-            // Print the table with binary transformations and generate connections
             for (int i = 0; i < serverCount; i++)
             {
                 string binary = binaryStrings[i];
@@ -50,14 +46,12 @@ namespace BusinessLogic.Graph
                 int newPosition0 = Convert.ToInt32(shift0, 2);
                 int newPosition1 = Convert.ToInt32(shift1, 2);
 
-                //Console.WriteLine($"{i}\t{binary}\t{shift0}\t{shift1}");
 
                 if (newPosition0 < serverCount && newPosition0 != i)
                 {
                     var startNode = nodes.First(n => n.Position == i);
                     var endNode = nodes.First(n => n.Position == newPosition0);
 
-                    // Check if the edge already exists in the database
                     if (!await _edgeService.IsEdgeExists(startNode.Id, endNode.Id))
                     {
                         await CreateEdge(startNode.Id, endNode.Id);
@@ -69,7 +63,6 @@ namespace BusinessLogic.Graph
                     var startNode = nodes.First(n => n.Position == i);
                     var endNode = nodes.First(n => n.Position == newPosition1);
 
-                    // Check if the edge already exists in the database
                     if (!await _edgeService.IsEdgeExists(startNode.Id, endNode.Id))
                     {
                         await CreateEdge(startNode.Id, endNode.Id);

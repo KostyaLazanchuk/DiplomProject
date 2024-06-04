@@ -1,4 +1,5 @@
-﻿using BusinessLogic.Service;
+﻿using BusinessLogic.Interface;
+using BusinessLogic.Service;
 using DataAccess.Repositories;
 using Diplom.Core.Features.NodeFeatures.Command;
 using Diplom.Core.Models;
@@ -12,30 +13,28 @@ namespace WebApplication.Controllers
     [Route("api/[controller]")]
     public class NodeController : ControllerBase
     {
-        private readonly NodeService _nodeService;
-        private readonly EdgeService _edgeService;
-        private readonly CommonRepository _commonRepository;
+        private readonly INodeService _nodeService;
+        private readonly IEdgeService _edgeService;
+        private readonly ICommonService _commonService;
         private readonly IMediator _mediator;
 
-        public NodeController(NodeService nodeService, EdgeService edgeService, CommonRepository commonRepository, IMediator mediator)
+        public NodeController(INodeService nodeService, IEdgeService edgeService, ICommonService commonRepository, IMediator mediator)
         {
             _nodeService = nodeService;
             _edgeService = edgeService;
-            _commonRepository = commonRepository;
+            _commonService = commonRepository;
             _mediator = mediator;
         }
 
-        // Додавання нових вузлів зі зв'язками
         [HttpPost("create-nodes-with-edges")]
         public async Task<IActionResult> CreateNodesWithEdges([FromBody] List<Node> nodes)
         {
-            await _commonRepository.DeleteAllData();
+            await _commonService.DeleteAllData();
             if (nodes == null || nodes.Count == 0)
             {
                 return BadRequest("Nodes list is null or empty");
             }
 
-            // Спочатку створюємо всі вузли
             var createdNodeList = new List<Node>();
             foreach (var node in nodes)
             {
@@ -44,7 +43,6 @@ namespace WebApplication.Controllers
                 createdNodeList.Add(createdNode);
             }
 
-            // Потім створюємо зв'язки для вузлів
             foreach (var node in nodes)
             {
                 if (node.Edge != null)
@@ -63,7 +61,6 @@ namespace WebApplication.Controllers
             return Ok("Nodes and edges created successfully");
         }
 
-        // Отримання вузла за ID
         [HttpGet("{id}")]
         public async Task<IActionResult> GetNodeById(Guid id)
         {
@@ -105,5 +102,93 @@ namespace WebApplication.Controllers
                 return StatusCode(500, new { Errors = ex.Message });
             }
         }
+
+        [HttpDelete]
+        [Route("delete")]
+        public async Task<IActionResult> DeleteNode([FromBody] DeleteNodeRequest request)
+        {
+            var node = await _nodeService.GetNodeByName(request.NodeName);
+            if (node == null)
+            {
+                return NotFound($"Node with name {request.NodeName} not found.");
+            }
+
+            await _nodeService.DeleteNode(node.Id);
+
+            return Ok("Node deleted successfully.");
+        }
+
+        [HttpGet]
+        [Route("count")]
+        public async Task<IActionResult> CountNodes()
+        {
+            try
+            {
+                var nodeCount = await _nodeService.CountNodes();
+                return Ok(new { Count = nodeCount });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Errors = ex.Message });
+            }
+        }
+
+        [HttpPut]
+        [Route("update-name")]
+        public async Task<IActionResult> UpdateNodeName([FromForm] string nodeNameInput, [FromForm] string newNodeName)
+        {
+            try
+            {
+                var node = await _nodeService.GetNodeByName(nodeNameInput);
+                if (node == null)
+                {
+                    return NotFound(new { Message = $"Node with name {nodeNameInput} not found." });
+                }
+
+                var updatedNode = await _nodeService.UpdateNode(node.Id, newNodeName);
+
+                if (updatedNode != null)
+                {
+                    return Ok(new { Message = "Node updated.", Node = updatedNode });
+                }
+                else
+                {
+                    return BadRequest(new { Message = "Node could not be updated." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Errors = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("nodes-by-pattern")]
+        public async Task<IActionResult> GetListNodeWithPatternName([FromQuery] string pattern)
+        {
+            try
+            {
+                var nodeList = await _commonService.GetNodesByPattern(pattern);
+                return Ok(new { Nodes = nodeList });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Errors = ex.Message });
+            }
+        }
+
+        [HttpDelete]
+        [Route("delete-all")]
+        public async Task<IActionResult> DeleteAllData()
+        {
+            await _commonService.DeleteAllData();
+            return Ok("All data deleted successfully.");
+        }
+
+        public class DeleteNodeRequest
+        {
+            public string NodeName { get; set; }
+        }
     }
 }
+

@@ -30,14 +30,12 @@ namespace BusinessLogic.Graph
             var accessNodes = new List<Node>();
             var serverNodes = new List<Node>();
 
-            // Create Core nodes
             for (int i = 0; i < coreCount; i++)
             {
                 var coreNode = await CreateNode($"Core{i + 1}");
                 coreNodes.Add(coreNode);
             }
 
-            // Create Aggregation and Access nodes
             for (int pod = 0; pod < pods; pod++)
             {
                 var aggNode1 = await CreateNode($"Agg{_index++}");
@@ -50,20 +48,17 @@ namespace BusinessLogic.Graph
                 accessNodes.Add(accessNode1);
                 accessNodes.Add(accessNode2);
 
-                // Connect Aggregation to Core
                 for (int i = 0; i < coreCount; i++)
                 {
                     await CreateEdge(coreNodes[i].Id, aggNode1.Id);
                     await CreateEdge(coreNodes[i].Id, aggNode2.Id);
                 }
 
-                // Connect Access to Aggregation
                 await CreateEdge(aggNode1.Id, accessNode1.Id);
                 await CreateEdge(aggNode1.Id, accessNode2.Id);
                 await CreateEdge(aggNode2.Id, accessNode1.Id);
                 await CreateEdge(aggNode2.Id, accessNode2.Id);
 
-                // Create and Connect Servers to Access
                 var serverNode1 = await CreateNode($"Server{_index++}");
                 var serverNode2 = await CreateNode($"Server{_index++}");
                 serverNodes.Add(serverNode1);

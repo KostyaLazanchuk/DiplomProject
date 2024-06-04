@@ -23,7 +23,7 @@ namespace AlgorithmTest
         {
             _mockCommonService = new Mock<ICommonService>();
             _mockNodeService = new Mock<INodeService>();
-            _aStarAlgorithm = new AStarAlgorithm(_mockCommonService.Object, _mockNodeService.Object);
+            _aStarAlgorithm = new AStarAlgorithm(_mockNodeService.Object);
         }
 
         [Test]

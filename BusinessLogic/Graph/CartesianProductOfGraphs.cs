@@ -23,7 +23,6 @@ namespace BusinessLogic.Graph
         {
             var newNodes = new Dictionary<(Guid, Guid), Node>();
 
-            // Create new nodes for Cartesian product
             foreach (var node1 in graph1Nodes)
             {
                 foreach (var node2 in graph2Nodes)
@@ -33,7 +32,7 @@ namespace BusinessLogic.Graph
                         Id = Guid.NewGuid(),
                         Name = $"{node1.Name},{node2.Name}",
                         CreatedOn = DateTime.UtcNow,
-                        Position = -1,
+                        Position = 1,
                         Edge = new List<Edge>()
                     };
 
@@ -42,7 +41,6 @@ namespace BusinessLogic.Graph
                 }
             }
 
-            // Create edges for Cartesian product
             foreach (var node1 in graph1Nodes)
             {
                 foreach (var edge1 in node1.Edge)

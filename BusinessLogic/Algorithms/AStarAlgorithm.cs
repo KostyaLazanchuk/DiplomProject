@@ -9,7 +9,7 @@ namespace BusinessLogic.Algorithms
     {
         private readonly INodeService _nodeService;
 
-        public AStarAlgorithm(ICommonService commonService, INodeService nodeService)
+        public AStarAlgorithm(INodeService nodeService)
         {
             _nodeService = nodeService;
         }
