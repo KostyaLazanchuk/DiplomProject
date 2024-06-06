@@ -17,7 +17,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [Route("execute")]
-        public async Task<IActionResult> ExecuteRootedProduct([FromBody] RootedProductRequest request)
+        public async Task<IActionResult> ExecuteRootedProduct([FromForm] RootedProductRequest request)
         {
             await _rootedProduct.RootedProductExecution(request.BaseNodeName, request.RootedNodeName);
             return Ok("Rooted product execution completed successfully.");

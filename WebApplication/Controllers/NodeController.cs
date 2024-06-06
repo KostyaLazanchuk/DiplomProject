@@ -1,4 +1,5 @@
-﻿using BusinessLogic.Interface;
+﻿using BusinessLogic.Graph;
+using BusinessLogic.Interface;
 using BusinessLogic.Service;
 using DataAccess.Repositories;
 using Diplom.Core.Features.NodeFeatures.Command;
@@ -17,13 +18,15 @@ namespace WebApplication.Controllers
         private readonly IEdgeService _edgeService;
         private readonly ICommonService _commonService;
         private readonly IMediator _mediator;
+        private readonly NodeAndEdgeGenerator _nodeAndEdgeGenerator;
 
-        public NodeController(INodeService nodeService, IEdgeService edgeService, ICommonService commonRepository, IMediator mediator)
+        public NodeController(INodeService nodeService, IEdgeService edgeService, ICommonService commonRepository, IMediator mediator, NodeAndEdgeGenerator nodeAndEdgeGenerator)
         {
             _nodeService = nodeService;
             _edgeService = edgeService;
             _commonService = commonRepository;
             _mediator = mediator;
+            _nodeAndEdgeGenerator = nodeAndEdgeGenerator;
         }
 
         [HttpPost("create-nodes-with-edges")]
@@ -183,6 +186,21 @@ namespace WebApplication.Controllers
         {
             await _commonService.DeleteAllData();
             return Ok("All data deleted successfully.");
+        }
+
+        [HttpPost]
+        [Route("create-random-nodes-and-edges")]
+        public async Task<IActionResult> CreateRandomNodesAndEdges([FromForm] int countNode, [FromForm] string nodeName)
+        {
+            try
+            {
+                var nodes = await _nodeAndEdgeGenerator.CreateRandomNodesAndEdges(countNode, nodeName);
+                return Ok(new { Message = "Random nodes and edges created successfully.", Nodes = nodes });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Errors = ex.Message });
+            }
         }
 
         public class DeleteNodeRequest

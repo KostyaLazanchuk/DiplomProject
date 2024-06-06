@@ -19,7 +19,7 @@ export interface Node {
   providedIn: 'root',
 })
 export class NodeService {
-  private apiUrl = 'https://localhost:7004/api/node/add';
+  private baseUrl = 'https://localhost:7004/api/node';
 
   constructor(private http: HttpClient) {}
 
@@ -31,8 +31,70 @@ export class NodeService {
       'X-Requested-With': 'XMLHttpRequest'
     });
 
+    return this.http.post(`${this.baseUrl}/add`, formData, { headers: headers }).pipe(
+      catchError(this.handleError)
+    );
+  }
 
-    return this.http.post(this.apiUrl, formData,{headers: headers}).pipe(
+  deleteNode(nodeName: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('NodeName', nodeName);
+    const headers = new HttpHeaders({
+      'X-Requested-With': 'XMLHttpRequest'
+    });
+
+    return this.http.delete(`${this.baseUrl}/delete`, { headers: headers, body: formData }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  countNodes(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/count`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  updateNodeName(oldName: string, newName: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('nodeNameInput', oldName);
+    formData.append('newNodeName', newName);
+    const headers = new HttpHeaders({
+      'X-Requested-With': 'XMLHttpRequest'
+    });
+
+    return this.http.put(`${this.baseUrl}/update-name`, formData, { headers: headers }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getNodesByPattern(pattern: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'X-Requested-With': 'XMLHttpRequest'
+    });
+
+    return this.http.get(`${this.baseUrl}/nodes-by-pattern`, {
+      headers: headers,
+      params: { pattern: pattern }
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  deleteAllData(): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/delete-all`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  createRandomNodesAndEdges(countNode: number, nodeName: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('countNode', countNode.toString());
+    formData.append('nodeName', nodeName);
+    const headers = new HttpHeaders({
+      'X-Requested-With': 'XMLHttpRequest'
+    });
+
+    return this.http.post(`${this.baseUrl}/create-random-nodes-and-edges`, formData, { headers: headers }).pipe(
       catchError(this.handleError)
     );
   }
@@ -40,10 +102,8 @@ export class NodeService {
   private handleError(error: any) {
     let errorMessage = '';
     if (error.error instanceof ErrorEvent) {
-      // Client-side errors
       errorMessage = `Error: ${error.error.message}`;
     } else {
-      // Server-side errors
       errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
     }
     return throwError(errorMessage);

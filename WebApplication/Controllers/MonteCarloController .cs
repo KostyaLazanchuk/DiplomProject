@@ -18,7 +18,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [Route("execute")]
-        public async Task<IActionResult> Simulate([FromBody] MonteCarloRequest request)
+        public async Task<IActionResult> Simulate([FromForm] MonteCarloRequest request)
         {
             var nodes = await _commonService.GetAllNodesWithRelationships();
             var failureProbabilities = new Dictionary<Guid, double>();

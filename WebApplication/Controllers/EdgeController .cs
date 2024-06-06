@@ -61,7 +61,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [Route("add-one-to-one")]
-        public async Task<IActionResult> AddEdgeOneToOne(string sourceNodeName, string targetNodeName, int weightFromSourceToTarget, int weightFromTargetToSource)
+        public async Task<IActionResult> AddEdgeOneToOne([FromForm] string sourceNodeName, [FromForm] string targetNodeName, [FromForm] int weightFromSourceToTarget, [FromForm] int weightFromTargetToSource)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace WebApplication.Controllers
 
         [HttpDelete]
         [Route("delete-by-node-name")]
-        public async Task<IActionResult> DeleteEdgesByNodeName([FromBody] DeleteEdgesRequest request)
+        public async Task<IActionResult> DeleteEdgesByNodeName([FromForm] DeleteEdgesRequest request)
         {
             var node = await _nodeService.GetNodeByName(request.NodeName);
 
@@ -110,7 +110,7 @@ namespace WebApplication.Controllers
 
         [HttpPut]
         [Route("update-weight-by-node-name")]
-        public async Task<IActionResult> UpdateEdgeWeightByNodeName([FromBody] UpdateEdgeWeightRequest request)
+        public async Task<IActionResult> UpdateEdgeWeightByNodeName([FromForm] UpdateEdgeWeightRequest request)
         {
             var node = await _nodeService.GetNodeByName(request.NodeName);
             if (node == null)

@@ -20,7 +20,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [Route("find-shortest-path-astar")]
-        public async Task<IActionResult> FindShortestPathAStar([FromBody] AStarRequest request)
+        public async Task<IActionResult> FindShortestPathAStar([FromForm] AStarRequest request)
         {
             var startNode = await _nodeService.GetNodeByName(request.StartNodeName);
             if (startNode == null)

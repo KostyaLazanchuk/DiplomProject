@@ -1,13 +1,342 @@
-<div>
-  <form [formGroup]="nodeForm" (ngSubmit)="addNode()">
-    <div>
-      <label for="name">Name:</label>
-      <input id="name" formControlName="name" required>
+<div style="text-align: center; padding: 20px; font-family: Arial, sans-serif; background-color: #f4f4f4; color: #4B0082;">
+  <h1 style="color: #4B0082;">Diplom Project</h1>
+  
+  <div style="display: flex; justify-content: space-around;">
+    <!-- Node Service Column -->
+    <div style="width: 30%;">
+      <h1 style="color: #4B0082;">Node Service</h1>
+      
+      <!-- Add Node Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Add Node</h2>
+        <form [formGroup]="nodeForm" (ngSubmit)="addNode()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="name" style="color: #FFD700; display: inline-block; width: 100px; text-align: right;">Name:</label>
+            <input id="name" formControlName="name" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="position" style="color: #FFD700; display: inline-block; width: 100px; text-align: right;">Position:</label>
+            <input id="position" formControlName="position" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="nodeForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Add Node</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Delete Node Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Delete Node</h2>
+        <form [formGroup]="deleteNodeForm" (ngSubmit)="deleteNode()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="deleteName" style="color: #FFD700; display: inline-block; width: 100px; text-align: right;">Name to delete:</label>
+            <input id="deleteName" formControlName="deleteName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="deleteNodeForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Delete Node</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Update Node Name Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Update Node Name</h2>
+        <form [formGroup]="updateNodeNameForm" (ngSubmit)="updateNodeName()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="oldName" style="color: #FFD700; display: inline-block; width: 100px; text-align: right;">Old Name:</label>
+            <input id="oldName" formControlName="oldName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="newName" style="color: #FFD700; display: inline-block; width: 100px; text-align: right;">New Name:</label>
+            <input id="newName" formControlName="newName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="updateNodeNameForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Update Node Name</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Get Nodes by Pattern Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Get Nodes by Pattern</h2>
+        <form [formGroup]="patternForm" (ngSubmit)="getNodesByPattern()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="pattern" style="color: #FFD700; display: inline-block; width: 100px; text-align: right;">Pattern:</label>
+            <input id="pattern" formControlName="pattern" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="patternForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Get Nodes</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Button to Count Nodes -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Count Nodes</h2>
+        <button (click)="countNodes()" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: 2px solid #4B0082; cursor: pointer;">Count Nodes</button>
+      </div>
+
+      <!-- Button to Delete All Data -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Delete All Data</h2>
+        <button (click)="deleteAllData()" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: 2px solid #4B0082; cursor: pointer;">Delete All Data</button>
+      </div>
+
+      <!-- Create Random Nodes and Edges Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Create Random Nodes and Edges</h2>
+        <form [formGroup]="randomNodesForm" (ngSubmit)="createRandomNodesAndEdges()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="countNode" style="color: #FFD700; display: inline-block; width: 100px; text-align: right;">Count Node:</label>
+            <input id="countNode" formControlName="countNode" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="nodeName" style="color: #FFD700; display: inline-block; width: 100px; text-align: right;">Node Name:</label>
+            <input id="nodeName" formControlName="nodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="randomNodesForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Create Random Nodes</button>
+          </div>
+        </form>
+      </div>
     </div>
-    <div>
-      <label for="position">Position:</label>
-      <input id="position" formControlName="position" required>
+
+    <!-- Edge Service Column -->
+    <div style="width: 30%; margin-left: 5%;">
+      <h1 style="color: #4B0082;">Edge Service</h1>
+
+      <!-- Add Edge Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Add Edge</h2>
+        <form [formGroup]="edgeForm" (ngSubmit)="addEdge()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="sourceNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Source Node Name:</label>
+            <input id="sourceNodeName" formControlName="sourceNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="targetNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Target Node Name:</label>
+            <input id="targetNodeName" formControlName="targetNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="weight" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Weight:</label>
+            <input id="weight" formControlName="weight" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="edgeForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Add Edge</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Add One-to-One Edge Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Add One-to-One Edge</h2>
+        <form [formGroup]="edgeOneToOneForm" (ngSubmit)="addEdgeOneToOne()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="sourceNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Source Node Name:</label>
+            <input id="sourceNodeName" formControlName="sourceNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="targetNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Target Node Name:</label>
+            <input id="targetNodeName" formControlName="targetNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="weightFromSourceToTarget" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Weight from Source to Target:</label>
+            <input id="weightFromSourceToTarget" formControlName="weightFromSourceToTarget" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="weightFromTargetToSource" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Weight from Target to Source:</label>
+            <input id="weightFromTargetToSource" formControlName="weightFromTargetToSource" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="edgeOneToOneForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Add One-to-One Edge</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Delete Edges by Node Name Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Delete Edges by Node Name</h2>
+        <form [formGroup]="deleteEdgeForm" (ngSubmit)="deleteEdgesByNodeName()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="nodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Node Name:</label>
+            <input id="nodeName" formControlName="nodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="deleteEdgeForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Delete Edges</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Update Edge Weight by Node Name Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Update Edge Weight by Node Name</h2>
+        <form [formGroup]="updateEdgeWeightForm" (ngSubmit)="updateEdgeWeightByNodeName()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="nodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Node Name:</label>
+            <input id="nodeName" formControlName="nodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="newWeight" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">New Weight:</label>
+            <input id="newWeight" formControlName="newWeight" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="updateEdgeWeightForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Update Edge Weight</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Button to Count Edges -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Count Edges</h2>
+        <button (click)="countEdges()" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: 2px solid #4B0082; cursor: pointer;">Count Edges</button>
+      </div>
     </div>
-    <button type="submit" [disabled]="nodeForm.invalid">Add Node</button>
-  </form>
+
+    <!-- Graph Operations Column -->
+    <div style="width: 30%; margin-left: 5%;">
+      <h1 style="color: #4B0082;">Graph Operations</h1>
+
+      <!-- Generate Binary Connections Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Generate Binary Connections</h2>
+        <form [formGroup]="binaryConnectionForm" (ngSubmit)="generateBinaryConnections()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="serverCount" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Server Count:</label>
+            <input id="serverCount" formControlName="serverCount" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="binaryConnectionForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Generate</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Cartesian Product Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Create Cartesian Product</h2>
+        <form [formGroup]="cartesianProductForm" (ngSubmit)="createCartesianProduct()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="graph1Pattern" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Graph 1 Pattern:</label>
+            <input id="graph1Pattern" formControlName="graph1Pattern" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="graph2Pattern" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Graph 2 Pattern:</label>
+            <input id="graph2Pattern" formControlName="graph2Pattern" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="cartesianProductForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Create</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Find Shortest Path (Dijkstra) Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Find Shortest Path (Dijkstra)</h2>
+        <form [formGroup]="dijkstraForm" (ngSubmit)="findShortestPathDijkstra()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="startNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Start Node Name:</label>
+            <input id="startNodeName" formControlName="startNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="goalNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Goal Node Name:</label>
+            <input id="goalNodeName" formControlName="goalNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="dijkstraForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Find Path</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Check Another Way Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Check Another Way</h2>
+        <form [formGroup]="checkAnotherWayForm" (ngSubmit)="checkAnotherWay()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="startNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Start Node Name:</label>
+            <input id="startNodeName" formControlName="startNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="goalNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Goal Node Name:</label>
+            <input id="goalNodeName" formControlName="goalNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="checkAnotherWayForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Check</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Create Fat Tree Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Create Fat Tree</h2>
+        <form [formGroup]="fatTreeForm" (ngSubmit)="createFatTree()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="coreCount" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Core Count:</label>
+            <input id="coreCount" formControlName="coreCount" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="fatTreeForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Create</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Monte Carlo Simulation Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Monte Carlo Simulation</h2>
+        <form [formGroup]="monteCarloForm" (ngSubmit)="simulateMonteCarlo()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="failureProbability" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Failure Probability:</label>
+            <input id="failureProbability" formControlName="failureProbability" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="iterations" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Iterations:</label>
+            <input id="iterations" formControlName="iterations" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="monteCarloForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Simulate</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Find Shortest Path (A*) Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Find Shortest Path (A*)</h2>
+        <form [formGroup]="aStarForm" (ngSubmit)="findShortestPathAStar()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="startNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Start Node Name:</label>
+            <input id="startNodeName" formControlName="startNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="goalNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Goal Node Name:</label>
+            <input id="goalNodeName" formControlName="goalNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="aStarForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Find Path</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Execute Rooted Product Form -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: #4B0082;">Execute Rooted Product</h2>
+        <form [formGroup]="rootedProductForm" (ngSubmit)="executeRootedProduct()" style="display: inline-block; text-align: left; background-color: #4B0082; padding: 20px; border-radius: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="baseNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Base Node Name:</label>
+            <input id="baseNodeName" formControlName="baseNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label for="rootedNodeName" style="color: #FFD700; display: inline-block; width: 150px; text-align: right;">Rooted Node Name:</label>
+            <input id="rootedNodeName" formControlName="rootedNodeName" required style="margin-left: 10px; padding: 5px;">
+          </div>
+          <div style="text-align: center;">
+            <button type="submit" [disabled]="rootedProductForm.invalid" style="background-color: #FFD700; color: #4B0082; padding: 10px; border: none; cursor: pointer;">Execute</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Display Results -->
+  <div *ngIf="result" style="margin-top: 20px;">
+    <pre style="background-color: #FFFFFF; padding: 10px; border: 1px solid #ccc; text-align: left;">{{ result | json }}</pre>
+  </div>
 </div>
+<h1 style="color: black;"> Network reliability: 85.00%</h1>

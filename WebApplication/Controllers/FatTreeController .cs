@@ -19,7 +19,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [Route("create")]
-        public async Task<IActionResult> CreateFatTree([FromBody] FatTreeRequest request)
+        public async Task<IActionResult> CreateFatTree([FromForm] FatTreeRequest request)
         {
             if (request.CoreCount <= 0)
             {
