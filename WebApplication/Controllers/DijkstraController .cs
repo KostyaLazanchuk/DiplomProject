@@ -22,7 +22,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [Route("find-shortest-path")]
-        public async Task<IActionResult> FindShortestPath([FromBody] DijkstraRequest request)
+        public async Task<IActionResult> FindShortestPath([FromForm] DijkstraRequest request)
         {
             var startNode = await _nodeService.GetNodeByName(request.StartNodeName);
             if (startNode == null)
@@ -52,7 +52,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [Route("check-another-way")]
-        public async Task<IActionResult> CheckAnotherWay([FromBody] CheckAnotherWayRequest request)
+        public async Task<IActionResult> CheckAnotherWay([FromForm] CheckAnotherWayRequest request)
         {
             var startNode = await _nodeService.GetNodeByName(request.StartNodeName);
             if (startNode == null)

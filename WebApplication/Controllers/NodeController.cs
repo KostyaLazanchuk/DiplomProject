@@ -1,4 +1,5 @@
-﻿using BusinessLogic.Interface;
+﻿using BusinessLogic.Graph;
+using BusinessLogic.Interface;
 using BusinessLogic.Service;
 using DataAccess.Repositories;
 using Diplom.Core.Features.NodeFeatures.Command;
@@ -17,17 +18,19 @@ namespace WebApplication.Controllers
         private readonly IEdgeService _edgeService;
         private readonly ICommonService _commonService;
         private readonly IMediator _mediator;
+        private readonly NodeAndEdgeGenerator _nodeAndEdgeGenerator;
 
-        public NodeController(INodeService nodeService, IEdgeService edgeService, ICommonService commonRepository, IMediator mediator)
+        public NodeController(INodeService nodeService, IEdgeService edgeService, ICommonService commonRepository, IMediator mediator, NodeAndEdgeGenerator nodeAndEdgeGenerator)
         {
             _nodeService = nodeService;
             _edgeService = edgeService;
             _commonService = commonRepository;
             _mediator = mediator;
+            _nodeAndEdgeGenerator = nodeAndEdgeGenerator;
         }
 
         [HttpPost("create-nodes-with-edges")]
-        public async Task<IActionResult> CreateNodesWithEdges([FromBody] List<Node> nodes)
+        public async Task<IActionResult> CreateNodesWithEdges([FromForm] List<Node> nodes)
         {
             await _commonService.DeleteAllData();
             if (nodes == null || nodes.Count == 0)
@@ -105,7 +108,7 @@ namespace WebApplication.Controllers
 
         [HttpDelete]
         [Route("delete")]
-        public async Task<IActionResult> DeleteNode([FromBody] DeleteNodeRequest request)
+        public async Task<IActionResult> DeleteNode([FromForm] DeleteNodeRequest request)
         {
             var node = await _nodeService.GetNodeByName(request.NodeName);
             if (node == null)
@@ -135,17 +138,17 @@ namespace WebApplication.Controllers
 
         [HttpPut]
         [Route("update-name")]
-        public async Task<IActionResult> UpdateNodeName([FromForm] string nodeNameInput, [FromForm] string newNodeName)
+        public async Task<IActionResult> UpdateNodeName([FromForm] UpdateNodeRequest request)
         {
             try
             {
-                var node = await _nodeService.GetNodeByName(nodeNameInput);
+                var node = await _nodeService.GetNodeByName(request.nodeNameInput);
                 if (node == null)
                 {
-                    return NotFound(new { Message = $"Node with name {nodeNameInput} not found." });
+                    return NotFound(new { Message = $"Node with name {request.nodeNameInput} not found." });
                 }
 
-                var updatedNode = await _nodeService.UpdateNode(node.Id, newNodeName);
+                var updatedNode = await _nodeService.UpdateNode(node.Id, request.newNodeName);
 
                 if (updatedNode != null)
                 {
@@ -164,7 +167,7 @@ namespace WebApplication.Controllers
 
         [HttpGet]
         [Route("nodes-by-pattern")]
-        public async Task<IActionResult> GetListNodeWithPatternName([FromQuery] string pattern)
+        public async Task<IActionResult> GetListNodeWithPatternName([FromForm] string pattern)
         {
             try
             {
@@ -185,9 +188,30 @@ namespace WebApplication.Controllers
             return Ok("All data deleted successfully.");
         }
 
+        [HttpPost]
+        [Route("create-random-nodes-and-edges")]
+        public async Task<IActionResult> CreateRandomNodesAndEdges([FromForm] int countNode, [FromForm] string nodeName)
+        {
+            try
+            {
+                var nodes = await _nodeAndEdgeGenerator.CreateRandomNodesAndEdges(countNode, nodeName);
+                return Ok(new { Message = "Random nodes and edges created successfully.", Nodes = nodes });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Errors = ex.Message });
+            }
+        }
+
         public class DeleteNodeRequest
         {
             public string NodeName { get; set; }
+        }
+
+        public class UpdateNodeRequest
+        {
+            public string newNodeName { get; set; }
+            public string nodeNameInput { get; set; }
         }
     }
 }

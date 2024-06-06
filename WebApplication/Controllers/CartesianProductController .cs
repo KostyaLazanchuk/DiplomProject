@@ -21,7 +21,7 @@ namespace WebApplication.Controllers
 
         [HttpPost]
         [Route("create")]
-        public async Task<IActionResult> CreateCartesianProduct([FromBody] CartesianProductRequest request)
+        public async Task<IActionResult> CreateCartesianProduct([FromForm] CartesianProductRequest request)
         {
             var cartesianProductGenerator = new CartesianProductOfGraphs(_nodeService, _edgeService);
             var oldGraphList = await _commonService.GetAllNodesWithRelationships();
